@@ -1,0 +1,59 @@
+﻿@model List<Subject> // Your model is a list of Subject objects
+<h2>Generate Schedule</h2>
+
+<form asp-controller="Schedule" asp-action="EditSchedule" method="post">
+    <label for="semesterStart">Semester Start:</label>
+    <input type="date" id="semesterStart" name="SemesterStart" required />
+
+    <label for="semesterEnd">Semester End:</label>
+    <input type="date" id="semesterEnd" name="SemesterEnd" required />
+
+    <label for="className">Class Name:</label>
+    <input type="text" id="className" name="ClassName" required />
+
+    <h3>Lessons</h3>
+    <div id="lessonsContainer">
+        <!-- Dynamically added lessons will go here -->
+    </div>
+
+    <button type="button" id="addLessonButton">Add Lesson</button>
+
+    <button type="submit">Save Schedule</button>
+</form>
+
+@section Scripts {
+    <script>
+        document.getElementById('addLessonButton').addEventListener('click', function () {
+            var lessonsContainer = document.getElementById('lessonsContainer');
+            var lessonDiv = document.createElement('div');
+            lessonDiv.classList.add('lesson');
+
+            // Subject Dropdown
+            var select = document.createElement('select');
+            select.name = 'Subjects[]'; // Use array notation for the name to handle multiple values;
+
+        @foreach (var subject in Model)
+        {
+            <text>
+                            var option = document.createElement('option');
+                option.value = "@subject.Code";
+                option.textContent = "@subject.Name";
+                select.appendChild(option);
+            </text>
+        }
+
+                lessonDiv.appendChild(select);
+
+            // Amount Input
+            var input = document.createElement('input');
+            input.type = 'number';
+            input.name = 'Amounts[]'; // Similarly, use array notation;
+            input.placeholder = 'Amount';
+            input.min = '0'; // Set the minimum value to 0 to prevent negative numbers
+            lessonDiv.appendChild(input);
+
+            // Append the lessonDiv to the container
+            lessonsContainer.appendChild(lessonDiv);
+        });
+    </script>
+}
