@@ -1,0 +1,108 @@
+﻿@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Html
+<style>
+    /* Tooltip container */
+    .lesson-info {
+        position: relative;
+        display: inline-block;
+    }
+
+        /* Tooltip text */
+        .lesson-info:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            z-index: 1;
+            width: 200px;
+            background: #f9f9f9;
+            color: #000;
+            text-align: center;
+            padding: 5px;
+            border: 1px solid #d4d4d4;
+            border-radius: 6px;
+            left: 100%;
+            margin-left: 10px;
+            white-space: pre-line; /* To retain newline characters in the tooltip. */
+        }
+</style>
+@model List<LessonTime> // Assuming that the model passed to the view is of type Schedule
+
+@{
+    ViewData["Title"] = "Weekly Schedule";
+
+    // Define the time slots
+    var timeSlots = new TimeSpan[]
+    {
+        new TimeSpan(9, 0, 0),
+        new TimeSpan(9, 55, 0),
+        new TimeSpan(10, 50, 0),
+        new TimeSpan(12, 0, 0),
+        new TimeSpan(12, 55, 0),
+        new TimeSpan(13, 40, 0)
+    };
+
+    // Define the days of the week
+    var daysOfWeek = Enum.GetValues(typeof(DayOfWeek)).Cast<DayOfWeek>()
+                         .Where(d => d >= DayOfWeek.Monday && d <= DayOfWeek.Friday).ToList();
+}
+
+<h1>Weekly Schedule (@ViewBag.WeekStartDate.ToString("MM/dd/yyyy") to @ViewBag.WeekEndDate.ToString("MM/dd/yyyy"))</h1>
+
+@* Week selection dropdown list *@
+<form asp-controller="Schedule" asp-action="WeeklySchedule" method="get">
+    <label for="weekDropdown">Select Week:</label>
+    <select id="weekDropdown" name="selectedWeek" onchange="this.form.submit()">
+        @Html.Raw(ViewBag.WeekDropdown)
+    </select>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Time/Day</th>
+            @foreach (var day in daysOfWeek)
+            {
+                <th>@day.ToString()</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var time in timeSlots)
+        {
+            <tr>
+                <td>@time.ToString(@"hh\:mm")</td>
+                @foreach (var day in daysOfWeek)
+                {
+                    <td>
+                        @RenderLesson(Model, day, time)
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@functions {
+    public HtmlString RenderLesson(IEnumerable<LessonTime> lessons, DayOfWeek day, TimeSpan time)
+    {
+        var lesson = lessons.FirstOrDefault(l => l.Start.DayOfWeek == day &&
+                                                 l.Start.TimeOfDay <= time &&
+                                                 l.End.TimeOfDay > time);
+        if (lesson != null)
+        {
+            // Convert all the necessary information into a string.
+            var tooltipInfo = $"Subject: {lesson.Subject}\n" +
+                              $"Start: {lesson.Start.ToString("g")}\n" +
+                              $"End: {lesson.End.ToString("g")}\n" +
+                              $"Description: {lesson.Description}\n" +
+                              $"Type: {lesson.Type}\n" +
+                              $"Classroom: {(lesson.room != null ? lesson.room.number.ToString() : "-")}";
+            // Escape the string for use in an HTML attribute.
+            var escapedTooltipInfo = HtmlEncoder.Default.Encode(tooltipInfo);
+
+            // Return the cell content with a data attribute for the tooltip.
+            return new HtmlString($"<span class='lesson-info' data-tooltip='{escapedTooltipInfo}'>{lesson.Subject}</span>");
+        }
+
+        return new HtmlString("-");
+    }
+}
