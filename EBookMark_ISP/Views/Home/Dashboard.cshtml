@@ -8,7 +8,7 @@
             <div class="text-center">
                 @{
                     var username = @ViewBag.Username;
-                    var permissions = ViewBag.Permissions;
+                    var permissions = ViewBag.Permissions;                   
                     <h1 class="display-4">Logged in as: @username</h1>
                     <h3 class="display-10">Permission value: @permissions</h3>
                 }
@@ -25,3 +25,17 @@
         
     </div>
 </div>
+@{  
+    if (permissions == 1)
+    {
+        @Html.Partial("_Student")
+    }
+    else if(permissions == 5)
+    {
+        @Html.Partial("_Teacher")     
+    }
+    else if (permissions == 10)
+    {
+        @Html.Partial("_Admin")
+    }
+}
