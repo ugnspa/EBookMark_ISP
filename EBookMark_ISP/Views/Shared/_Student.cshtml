@@ -1,5 +1,13 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿
 @{
+    ViewData["Title"] = "_Teacher";
 }
+
+<div class="container border text-center pb-5 mt-5">
+    <h1 class="my-4">Student</h1>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <a class="btn btn-primary btn-lg" href="@Url.Action("GradeBook", "User")">My GradeBook</a>
+        </div>
+    </div>
+</div>

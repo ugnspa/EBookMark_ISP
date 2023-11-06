@@ -16,9 +16,9 @@ namespace EBookMark_ISP.Controllers
         public IActionResult Index()
         {
             string username = HttpContext.Session.GetString("Username");
-            if(username != null) 
-            {
-                View("Dashboard");
+            if(username != null)
+            { 
+                return RedirectToAction("Dashboard");
             }
             string errorMessage = TempData["ErrorMessage"] as string;
             if (errorMessage != null)
