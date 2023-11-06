@@ -73,7 +73,7 @@ namespace EBookMark_ISP.Controllers
             if (username != null)
             {
                 int? access = HttpContext.Session.GetInt32("Permissions");
-                if (access != null && access > 1)
+                if (access != null && access > 5)
                 {
                     Schedule fullSchedule = CreateFullSchedule(1);
                     Schedule fullSchedule2 = CreateFullSchedule(2);
