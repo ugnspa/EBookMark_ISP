@@ -1,5 +1,6 @@
 ﻿using EBookMark_ISP.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Text;
 
 namespace EBookMark_ISP.Controllers
@@ -87,8 +88,9 @@ namespace EBookMark_ISP.Controllers
 
         private Schedule CreateFullSchedule(int id)
         {
-            Classroom classroom = new Classroom(101, "Lecture Hall", 10, 50, "Science Building");
+            Classroom classroom = new Classroom(1, 101, "Lecture Hall", 10, 50, "Science Building");
             LessonTime lessonTime = new LessonTime(
+                id = 1,
                 start: new DateTime(2023, 11, 7, 9, 0, 0), // November 7, 2023, at 9:00 AM
                 end: new DateTime(2023, 11, 7, 9, 45, 0),   // Ends at 9:45 AM
                 desc: "Introduction to Programming",
@@ -147,6 +149,16 @@ namespace EBookMark_ISP.Controllers
             return View("CreateSchedule");
         }
 
+        public IActionResult AddSchedule()
+        {
+            return RedirectToAction("EditSchedule", new { scheduleId = 1 });
+        }
+
+        public IActionResult GenerateAndAddSchedule()
+        {
+            return RedirectToAction("EditSchedule", new { scheduleId = 1 });
+        }
+
         public IActionResult GenerateSchedule()
         {
             List<Subject> list = new List<Subject>
@@ -159,9 +171,71 @@ namespace EBookMark_ISP.Controllers
             return View(list);
         }
 
-        public IActionResult EditSchedule()
+        public IActionResult EditSchedule(int scheduleId = 1)
         {
-            return View();
+            Schedule fullSchedule = GetScheduleById(scheduleId);
+            return View(fullSchedule);
+        }
+
+        [HttpPost]
+        public IActionResult UpdateSchedule(Schedule model)
+        {
+            return RedirectToAction("index");
+        }
+
+        public IActionResult EditLessonTime(int id)
+        {
+            Classroom classroom = new Classroom(1, 101, "Lecture Hall", 10, 50, "Science Building");
+            Classroom classroom2 = new Classroom(2, 102, "Lecture Hall", 10, 50, "Science Building");
+            LessonTime lessonTime = new LessonTime(
+                id = 1,
+                start: new DateTime(2023, 11, 7, 9, 0, 0), // November 7, 2023, at 9:00 AM
+                end: new DateTime(2023, 11, 7, 9, 45, 0),   // Ends at 9:45 AM
+                desc: "Introduction to Programming",
+                type: "Lecture",
+                room: classroom,
+                subject: "Programming"
+            );
+            List<Classroom> classrooms = new List<Classroom>();
+            classrooms.Add(classroom);
+            classrooms.Add(classroom2);
+            ViewBag.ClassroomSelectList = new SelectList(classrooms, "number", "FullInfo", lessonTime.room?.number);
+            return View(lessonTime);
+        }
+
+        public IActionResult DeleteLessonTime(int id)
+        {
+            return RedirectToAction("EditSchedule");
+        }
+
+        public IActionResult UpdateLessonTime()
+        {
+            return RedirectToAction("EditSchedule");
+        }
+
+        public IActionResult AddLessonTime()
+        {
+            Classroom classroom = new Classroom(1, 101, "Lecture Hall", 10, 50, "Science Building");
+            Classroom classroom2 = new Classroom(2, 102, "Lab", 10, 30, "Engineering Building");
+            List<Classroom> classrooms = new List<Classroom>() { classroom, classroom2 };
+
+            // Prepare the select list with a formatted display string
+            var classroomSelectItems = classrooms.Select(c => new {
+                number = c.number,
+                displayValue = $"Room {c.number} - {c.usage} - {c.building}"
+            }).ToList();
+
+            ViewBag.ClassroomSelectList = new SelectList(classroomSelectItems, "number", "displayValue");
+
+            // Pass a new instance of LessonTime to ensure fields are empty
+            var newLessonTime = new LessonTime();
+
+            return View(newLessonTime);
+        }
+
+        public IActionResult CreateLessonTime()
+        {
+            return RedirectToAction("EditSchedule");
         }
 
         private int CalculateTotalWeeks(DateTime startDate, DateTime endDate)
@@ -188,6 +262,11 @@ namespace EBookMark_ISP.Controllers
                 dropdown.AppendLine($"<option value=\"{i}\"{(i == selectedWeek ? " selected" : "")}>Week {i}</option>");
             }
             return dropdown.ToString();
+        }
+
+        public IActionResult DeleteSchedule(int scheduleId)
+        {
+            return RedirectToAction("index");
         }
 
 

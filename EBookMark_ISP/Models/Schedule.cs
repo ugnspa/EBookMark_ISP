@@ -10,9 +10,13 @@
 
         public List<LessonTime> Lessons;
 
+        public Schedule()
+        {
+        }
+
         public Schedule(int id, DateTime semestarStart, DateTime semestarEnd, string className)
         {
-            id = ScheduleId;
+            ScheduleId = id;
             SemestarStart = semestarStart;
             SemestarEnd = semestarEnd;
             this.className = className;
