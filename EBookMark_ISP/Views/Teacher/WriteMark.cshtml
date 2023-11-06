@@ -1,0 +1,15 @@
+﻿@model List<string>
+
+<div class="container text-center pb-5 mt-5">
+    <h1>Writing mark to @Model[0] for subject @Model[1]</h1>
+    <form asp-controller="Teacher" asp-action="WriteMark" method="post">
+        <input type="hidden" name="subject" value="@Model[1]" />
+        <input type="hidden" name="name" value="@Model[0]" />
+        <div class="form-group">
+            <label for="mark">Mark:</label>
+             <input type="text" class="form-control" id="mark" name="mark" placeholder="Enter mark" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+

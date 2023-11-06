@@ -15,9 +15,32 @@ namespace EBookMark_ISP.Controllers
 
         public IActionResult Index()
         {
+            string username = HttpContext.Session.GetString("Username");
+
+            if(username != null) 
+            {
+                return RedirectToAction("Dashboard");
+            }
+            string errorMessage = TempData["ErrorMessage"] as string;
+            if (errorMessage != null)
+            {
+                ViewData["ErrorMessage"] = errorMessage;
+            }
             return View();
         }
 
+        public IActionResult Dashboard()
+        {
+			string username = HttpContext.Session.GetString("Username");
+            int? permissions = HttpContext.Session.GetInt32("Permissions");
+            if(username == null)
+            {
+				return RedirectToAction("Index", "Home");
+			}
+            ViewBag.Username = username;
+            ViewBag.Permissions = permissions;
+            return View();
+        }
         public IActionResult Privacy()
         {
             return View();

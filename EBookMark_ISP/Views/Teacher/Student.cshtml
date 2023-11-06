@@ -1,0 +1,14 @@
+﻿@model string
+
+<div class="container border text-center pb-5 mt-5">
+    <h1 class="my-4">@Model</h1>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <a class="btn btn-primary btn-lg" asp-controller="Teacher" asp-action="Subjects" asp-route-name="@Model">Write mark for student</a>
+        </div>
+        <div class="col-md-4 mb-3">
+            <a class="btn btn-primary btn-lg" asp-controller="User" asp-action="GradeBook" asp-route-name="@Model">Gradebook</a>
+        </div>
+    </div>
+</div>
+
