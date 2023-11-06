@@ -43,7 +43,10 @@
                 <th>Student Count</th>
                 <th>Year</th>
                 <th>Code</th>
-                <th>Actions</th>
+                @if(ViewBag.Permissions >= 5)
+                {
+                    <th>Actions</th>
+                }
             </tr>
         </thead>
         <tbody>
@@ -52,19 +55,24 @@
                 <td>24</td>
                 <td>1</td>
                 <td>1A2023</td>
-                <td>
-                    @if(ViewBag.Permissions >= 9)
-                    {
-                        <a href="@Url.Action("Modify", "Class", new { code = "1A2023" })" class="btn btn-primary">Modify class</a>
-                    }else if(ViewBag.Permissions >=5){
-                        <a href="@Url.Action("ClassInfo", "Class", new { code = "1A2023" })" class="btn btn-primary">View Class Info</a>
-                    }
+                @if(ViewBag.Permissions >= 5)
+                {
+                    <td>
+                        @if (ViewBag.Permissions >= 9)
+                        {
+                            <a href="@Url.Action("Modify", "Class", new { code = "1A2023" })" class="btn btn-primary">Modify class</a>
+                        }
+                        else if (ViewBag.Permissions >= 5)
+                        {
+                            <a href="@Url.Action("ClassInfo", "Class", new { code = "1A2023" })" class="btn btn-primary">View Class Info</a>
+                        }
 
-                    @if (ViewBag.Permissions >= 9)
-                    {
-                        <a href="javascript:void(0);" onclick="confirmRemove('1A2023');" class="btn btn-danger">Remove</a>
-                    }
-                </td>
+                        @if (ViewBag.Permissions >= 9)
+                        {
+                            <a href="javascript:void(0);" onclick="confirmRemove('1A2023');" class="btn btn-danger">Remove</a>
+                        }
+                    </td>
+                }
             </tr>
            @* @foreach (var classData in Model.Classes)
             {
