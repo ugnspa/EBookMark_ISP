@@ -50,9 +50,17 @@ namespace EBookMark_ISP.Controllers
             dict["Lietuviu"] = marksLietuviu;
             dict["Matke"] = marksMatke;
             dict["Anglu"] = marksAnglu;
-            ViewBag.StudentName = name;
             int? permissions = HttpContext.Session.GetInt32("Permissions");
-            ViewBag.Permissions = permissions;
+            if (name == null && permissions == 1)
+            {
+                string username = HttpContext.Session.GetString("Username");
+                ViewBag.StudentName = username;
+            }
+            else
+            {
+                ViewBag.StudentName = name;
+            }
+                ViewBag.Permissions = permissions;
             return View(dict);
         }
 
