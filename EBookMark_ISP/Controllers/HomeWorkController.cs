@@ -35,8 +35,8 @@ namespace EBookMark_ISP.Controllers
             }
             return true;
         }
-
-
+        
+        
 
         public IActionResult Index()
         {
@@ -45,6 +45,9 @@ namespace EBookMark_ISP.Controllers
 
         public IActionResult HomeWorkList()
         {
+
+            int? permissions = HttpContext.Session.GetInt32("Permissions");
+            ViewBag.Permissions = permissions;
             List<string> works = new List<string>();
             works.Add("1");
             works.Add("2");
@@ -54,12 +57,15 @@ namespace EBookMark_ISP.Controllers
         }
         public IActionResult HomeWork(string name)
         {
+            int? permissions = HttpContext.Session.GetInt32("Permissions");
+            ViewBag.Permissions = permissions;
 
             return View("HomeWork", name);
 
         }
 
-        public IActionResult AddHomeWork(string input)
+        
+        public IActionResult AddHomeWork()
         {
             if (!AccessTeacher())
             {
@@ -67,13 +73,33 @@ namespace EBookMark_ISP.Controllers
             }
             return View();
         }
-        public IActionResult AddFile(string input)
+
+        [HttpPost]
+        public IActionResult AddHomeWork(string input)
+        {
+            if (!AccessTeacher())
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+            return RedirectToAction("HomeWorkList", "HomeWork");
+        }
+        public IActionResult AddFile()
         {
             if (!AccessStudent())
             {
                 return RedirectToAction("Dashboard", "Home");
             }
             return View();
+        }
+
+        [HttpPost]
+        public IActionResult AddFile(string input)
+        {
+            if (!AccessStudent())
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+            return RedirectToAction("HomeWorkList", "HomeWork");
         }
     }
 }

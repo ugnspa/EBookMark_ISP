@@ -29,9 +29,10 @@
         </tbody>
     </table>
 
-
-    <div class="col-md-4 mb-3">
-        <a class="btn btn-primary btn-lg" href="@Url.Action("AddHomeWork", "HomeWork")">Add HomeWork</a>
-    </div>
+    @if (ViewBag.Permissions >= 5)
+    {
+        <div class="col-md-4 mb-3">
+            <a class="btn btn-primary btn-lg" href="@Url.Action("AddHomeWork", "HomeWork")">Add HomeWork</a>
+    </div>}
 </body>
 </html>
