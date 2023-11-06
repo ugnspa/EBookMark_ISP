@@ -7,10 +7,11 @@
 </head>
 <body>
     <h1>@Model</h1>
-    
-    <div class="col-md-4 mb-3">
-        <a class="btn btn-primary btn-lg" href="@Url.Action("AddFile", "HomeWork")">Add file</a>
-    </div>
+    @if (ViewBag.Permissions == 1)
+    {
+        <div class="col-md-4 mb-3">
+            <a class="btn btn-primary btn-lg" href="@Url.Action("AddFile", "HomeWork")">Add file</a>
+    </div>}
     
 </body>
 </html>
