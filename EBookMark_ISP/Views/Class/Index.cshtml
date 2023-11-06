@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Class List</title>
+
+    <style>
+                #classes {
+                font-family: Arial; border-collapse: collapse; width: 100%;
+                }
+                #classes td {
+                    border: 1px solid #ddd; padding: 8px;
+                }
+                #classes tr:nth-child(even){background-color: #f2f2f2;}
+                #classes tr:hover {background-color: #ddd;}
+                #classes th { padding: 8px;}
+    </style>
+
+    <script>
+        function confirmRemove(code) {
+            if (confirm("Are you sure you want to remove this class?")) {
+                // If the user confirms, redirect to the Remove action
+                window.location.href = "@Url.Action("Remove", "Class")" + "?code=" + code;
+            }
+        }
+    </script>
+</head>
+<body>
+    <div>
+        <h1>Class List</h1>
+        @if (ViewBag.Permissions >= 9)
+        {
+            <div style="text-align: right;">
+                <a href="@Url.Action("Create", "Class")" class="btn btn-success">Create Class</a>
+            </div>
+        }
+
+    </div>
+
+    <table id="classes">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Student Count</th>
+                <th>Year</th>
+                <th>Code</th>
+                @if(ViewBag.Permissions >= 5)
+                {
+                    <th>Actions</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1A</td>
+                <td>24</td>
+                <td>1</td>
+                <td>1A2023</td>
+                @if(ViewBag.Permissions >= 5)
+                {
+                    <td>
+                        @if (ViewBag.Permissions >= 9)
+                        {
+                            <a href="@Url.Action("Modify", "Class", new { code = "1A2023" })" class="btn btn-primary">Modify class</a>
+                        }
+                        else if (ViewBag.Permissions >= 5)
+                        {
+                            <a href="@Url.Action("ClassInfo", "Class", new { code = "1A2023" })" class="btn btn-primary">View Class Info</a>
+                        }
+
+                        @if (ViewBag.Permissions >= 9)
+                        {
+                            <a href="javascript:void(0);" onclick="confirmRemove('1A2023');" class="btn btn-danger">Remove</a>
+                        }
+                    </td>
+                }
+            </tr>
+           @* @foreach (var classData in Model.Classes)
+            {
+                <tr>
+                    <td>@classData.Name</td>
+                    <td>@classData.StudentCount</td>
+                    <td>@classData.Year</td>
+                    <td>@classData.Code</td>
+                    <td>
+                        @if (ViewBag.Permission > 5)
+                        {
+                            <a href="@Url.Action("ClassInfo", "YourController", new { code = classData.Code })" class="btn btn-primary">View Class Info</a>
+                        }
+                        @if (ViewBag.Permission >= 9)
+                        {
+                            <a href="@Url.Action("Remove", "YourController", new { code = classData.Code })" class="btn btn-danger">Remove</a>
+                        }
+                    </td>
+                </tr>
+            }*@
+        </tbody>
+    </table>
+</body>
+</html>

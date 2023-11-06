@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Class Information</title>
+
+    <style>
+        #classes {
+            font-family: Arial;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+            #classes td {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+
+            #classes tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+
+            #classes tr:hover {
+                background-color: #ddd;
+            }
+
+            #classes th {
+                padding: 8px;
+            }
+    </style>
+
+</head>
+<body>
+    <div>
+        <h1>Class information</h1>
+@*        @if (ViewBag.Permissions >= 9)
+        {
+            <div style="text-align: right;">
+                <a href="@Url.Action("Create", "Class")" class="btn btn-success">Create Class</a>
+            </div>
+        }*@
+
+    </div>
+
+    <table id="classes">
+        <tbody>
+            <tr>
+                <th>Name</th>
+                <td>1A</td>
+            </tr>
+            <tr>
+                <th>Student Count</th>
+                <td>24</td>
+            </tr>
+            <tr>
+                <th>Year</th>
+                <td>1</td>
+            </tr>
+            <tr>
+                <th>Code</th>
+                <td>1A2023</td>
+            </tr>
+        </tbody>
+    </table>
+    <br><br><br>
+    <h3>Students</h3>
+
+    <table id="classes">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Surname</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Student</td>
+                <td>Student</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
