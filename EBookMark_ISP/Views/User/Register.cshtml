@@ -1,0 +1,143 @@
+﻿<div class="container mt-5">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Initially hide all forms
+            $("#studentForm, #teacherForm, #adminForm").hide();
+
+            // Event handler for user type selection
+            $("#userType").change(function () {
+                var selectedUserType = $(this).val();
+
+                // Hide all forms
+                $("#studentForm, #teacherForm, #adminForm").hide();
+
+                // Show the selected form
+                $("#" + selectedUserType + "Form").show();
+            });
+        });
+    </script>
+
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <h2>Register user</h2>
+            <label for="userType">Select User Type:</label>
+            <select id="userType" class="form-control">
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+                <option value="admin">Admin</option>
+            </select>
+
+            <form id="studentForm" action="Register" method="post">
+                <h3>Student information</h3>
+                <div class="mb-3">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="surname">Surname</label>
+                    <input type="text" id="surname" name="surname" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="birthDate">Birthdate</label>
+                    <input type="date" id="birthDate" name="birthDate" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="gender">Gender</label>
+                    <input type="text" id="gender" name="gender" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="personalID">Personal code</label>
+                    <input type="text" id="personalID" name="personalID" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="hasStudentID">Already has ID card</label>
+                    <input type="checkbox" id="hasStudentID" name="hasStudentID">
+                </div>
+
+                <h3>Guardian information</h3>
+                <div class="mb-3">
+                    <label for="guardianName">Guardian name</label>
+                    <input type="text" id="guardianName" name="guardianName" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="guardianSurname">Guardian surname</label>
+                    <input type="text" id="guardianSurname" name="guardianSurname" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="guardianPhoneNumber">Guardian phone number</label>
+                    <input type="text" id="guardianPhoneNumber" name="guardianPhoneNumber" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="guardianEmail">Guardian email</label>
+                    <input type="email" id="guardianEmail" name="guardianEmail" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="guardianAdress">Guardian adress</label>
+                    <input type="text" id="guardianAdress" name="guardianAdress" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add student</button>
+            </form>
+
+            <form id="teacherForm" action="Register" method="post">
+                <h3>Student information</h3>
+                <div class="mb-3">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="surname">Surname</label>
+                    <input type="text" id="surname" name="surname" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="employmentDate">Date of employment</label>
+                    <input type="date" id="employmentDate" name="employmentDate" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="gender">Gender</label>
+                    <input type="text" id="gender" name="gender" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="phoneNumber">Phone number</label>
+                    <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="personalID">Personal code</label>
+                    <input type="text" id="personalID" name="personalID" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add teacher</button>
+            </form>
+
+            <form id="adminForm" action="Register" method="post">
+                <h3>Student information</h3>
+                <div class="mb-3">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add admin</button>
+            </form>
+        </div>
+    </div>
+</div>

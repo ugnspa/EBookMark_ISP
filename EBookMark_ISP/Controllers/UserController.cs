@@ -83,6 +83,55 @@ namespace EBookMark_ISP.Controllers
             }
             return RedirectToAction("Index");
         }
+
+        public IActionResult Register()
+        {
+            string username = HttpContext.Session.GetString("Username");
+            if (username == null)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Register(string username, string password, string email,
+            string name, string surname, DateTime birthDate,
+            string gender, string personalID, bool hasStudentID,
+            string guardianName, string guardianSurname,
+            string guardianPhoneNumber, string guardianEmail, string guardianAdress)
+        {
+            string currUsername = HttpContext.Session.GetString("Username");
+            if (currUsername == null)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult RegisterTeacher(string username, string password, string email,
+            string name, string surname, DateTime employmentDate,
+            string gender, string phoneNumber, string personalID)
+        {
+            string currUsername = HttpContext.Session.GetString("Username");
+            if (currUsername == null)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+            return View("Register");
+        }
+
+        [HttpPost]
+        public IActionResult RegisterAdmin(string username, string password, string email)
+        {
+            string currUsername = HttpContext.Session.GetString("Username");
+            if (currUsername == null)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+            return View("Register");
+        }
     }                      
     
 }
