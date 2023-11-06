@@ -60,7 +60,7 @@ namespace EBookMark_ISP.Controllers
             {
                 ViewBag.StudentName = name;
             }
-                ViewBag.Permissions = permissions;
+            ViewBag.Permissions = permissions;
             return View(dict);
         }
 
@@ -84,6 +84,17 @@ namespace EBookMark_ISP.Controllers
             return RedirectToAction("Index");
         }
 
+        public IActionResult UserList()
+        {
+            string username = HttpContext.Session.GetString("Username");
+            int? permissions = HttpContext.Session.GetInt32("Permissions");
+            if (username == null || permissions == null || permissions < 9)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+            ViewBag.Permissions = permissions;
+            return View();
+        }
         public IActionResult Register()
         {
             string username = HttpContext.Session.GetString("Username");
@@ -106,7 +117,7 @@ namespace EBookMark_ISP.Controllers
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-            return View();
+            return RedirectToAction("Userlist");
         }
 
         [HttpPost]
@@ -119,7 +130,7 @@ namespace EBookMark_ISP.Controllers
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-            return View("Register");
+            return RedirectToAction("Userlist");
         }
 
         [HttpPost]
@@ -130,7 +141,19 @@ namespace EBookMark_ISP.Controllers
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-            return View("Register");
+            return RedirectToAction("Userlist");
+        }
+
+        public IActionResult ClassInfo()
+        {
+            string currUsername = HttpContext.Session.GetString("Username");
+            if (currUsername == null)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+            Console.WriteLine("AAAA");
+            return RedirectToAction("ClassInfo", "Class");
+
         }
     }                      
     
