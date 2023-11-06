@@ -1,0 +1,25 @@
+﻿@model List<string>
+@{
+    string student = (string)Model[0];
+}
+
+<div class="container text-center pb-5 mt-5">
+    <h1>Subjects for @student</h1>
+    <div class="row">
+        @for (int i = 1; i < Model.Count; i++)
+        {
+            <div class="col-md-4 mb-3">
+                <a class="btn btn-primary btn-block" asp-controller="Teacher" asp-action="WriteMark" asp-route-subject="@Model[i]" asp-route-name="@student" style="width: 100%; height: 100%;">@Model[i]</a>
+            </div>
+        }
+    </div>
+</div>
+<div class="container text-center pb-5 mt-5">
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <a class="btn btn-primary btn-lg" asp-controller="Teacher" asp-action="Student" asp-route-name="@student">Back To Student window</a>
+        </div>
+    </div>
+</div>
+
+
