@@ -1,7 +1,7 @@
 ﻿@model List<Subject> // Your model is a list of Subject objects
 <h2>Generate Schedule</h2>
 
-<form asp-controller="Schedule" asp-action="EditSchedule" method="post">
+<form asp-controller="Schedule" asp-action="GenerateAndAddSchedule" method="post">
     <label for="semesterStart">Semester Start:</label>
     <input type="date" id="semesterStart" name="SemesterStart" required />
 

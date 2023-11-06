@@ -12,7 +12,6 @@
         <th>Class Name</th>
         <th>Semester Start</th>
         <th>Semester End</th>
-        <th>Actions</th>
     </tr>
     @foreach (var schedule in Model)
     {
@@ -24,6 +23,18 @@
                     <form asp-controller="Schedule" asp-action="WeeklySchedule" method="get">
                         <input type="hidden" name="scheduleId" value="@schedule.ScheduleId" />
                         <input type="submit" value="View" />
+                    </form>
+                </td>
+                <td>
+                    <form asp-controller="Schedule" asp-action="DeleteSchedule" method="get">
+                        <input type="hidden" name="scheduleId" value="@schedule.ScheduleId" />
+                        <input type="submit" value="Delete" />
+                    </form>
+                </td>
+                <td>
+                    <form asp-controller="Schedule" asp-action="EditSchedule" method="get">
+                        <input type="hidden" name="scheduleId" value="@schedule.ScheduleId" />
+                        <input type="submit" value="Edit" />
                     </form>
                 </td>
             </tr>
