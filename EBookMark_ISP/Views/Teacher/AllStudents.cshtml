@@ -1,0 +1,21 @@
+﻿@model List<string>
+
+<div class="container text-center pb-5 mt-5">
+    <h1>Students</h1>
+    <div class="row">
+        @foreach (string str in Model)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@str</h5>
+                        <a class="btn btn-primary" asp-controller="Teacher" asp-action="Student" asp-route-name="@str">View Profile</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+

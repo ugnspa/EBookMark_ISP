@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Create Schedule";
+}
+
+<h1>Create Schedule</h1>
+
+<form asp-controller="Schedule" asp-action="AddSchedule" method="post">
+    <div class="form-group">
+        <label for="SemestarStart">Start of Semester:</label>
+        <input type="date" id="SemestarStart" name="SemestarStart" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label for="SemestarEnd">End of Semester:</label>
+        <input type="date" id="SemestarEnd" name="SemestarEnd" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label for="ClassName">Class Name:</label>
+        <input type="text" id="ClassName" name="ClassName" class="form-control" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Next</button>
+</form>

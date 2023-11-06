@@ -1,0 +1,56 @@
+﻿<style>
+    .gradebook-table td, .gradebook-table th {
+        width: calc(100% / 12);
+        text-align: center;
+        border: 1px solid #ddd; 
+    }
+
+</style>
+
+@model Dictionary<string, string[]>
+<div class="container text-center pb-5 mt-5">
+    <h2>Grade Book for @ViewBag.StudentName</h2>
+    <table class="table gradebook-table">
+        <thead class="thead-light">
+            <tr>
+                <th scope="col">
+                    <span>Subject</span> / <span>Day</span>
+                    </th>
+                @for (int i = 1; i <= Model.First().Value.Length; i++)
+                {
+                    <th scope="col">@i</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var key in Model)
+            {
+                <tr>
+                    <th scope="row">@key.Key</th>
+                    @for (int i = 0; i < key.Value.Length; i++)
+                    {
+                        <td>
+                            @if (@key.Value[i] != null)
+                            {
+                                @if(ViewBag.Permissions == 5)
+                                {
+                                    <a class="btn btn-defaul" style="border:none;"asp-controller="Teacher" asp-action="EditMark" asp-route-name="@ViewBag.StudentName" asp-route-day="@(i+1)" asp-route-subject="@key.Key" asp-route-mark="@key.Value[i]">@key.Value[i]</a>
+                                }
+                                else{
+                                    <strong>@key.Value[i]</strong>
+                                }
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@if(ViewBag.Permissions == 5)
+{
+    <div class="col-md-4 mb-3">
+        <a class="btn btn-primary btn-lg" asp-controller="Teacher" asp-action="Student" asp-route-name="@ViewBag.StudentName">Back to Student window</a>
+    </div>
+}
+
