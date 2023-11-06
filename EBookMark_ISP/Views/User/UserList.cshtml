@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Class List</title>
+
+    <style>
+        #table {
+            font-family: Arial;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+            #table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+
+            #table tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+
+            #table tr:hover {
+                background-color: #ddd;
+            }
+
+            #table th {
+                padding: 8px;
+            }
+    </style>
+
+</head>
+<body>
+    <div>
+        <h1>Class List</h1>
+        @if (ViewBag.Permissions >= 9)
+        {
+            <div style="text-align: right;">
+                <a href="@Url.Action("Register", "User")" class="btn btn-success">Create a new user</a>
+            </div>
+        }
+
+    </div>
+
+    <table id="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Surname</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Student</td>
+                <td>Student</td>
+            </tr>
+            <tr>
+                <td>Student2</td>
+                <td>Student2</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
