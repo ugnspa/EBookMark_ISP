@@ -1,6 +1,7 @@
 ﻿using EBookMark_ISP.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using NuGet.DependencyResolver;
 using Org.BouncyCastle.Bcpg;
 using System.Text;
@@ -106,6 +107,14 @@ namespace EBookMark_ISP.Controllers
                 return RedirectToAction("Dashboard", "Home");
             }
             ViewBag.Permissions = permissions;
+            var admins = _context.Users.Where(u => u.Admin != null).ToList();
+            var students = _context.Students.Include(s => s.FkUserNavigation).ToList();
+            var teachers = _context.Teachers.Include(t => t.FkUserNavigation).ToList();
+
+            // Pass the lists to the view
+            ViewBag.Admins = admins;
+            ViewBag.Students = students;
+            ViewBag.Teachers = teachers;
             return View();
         }
         public IActionResult Register()
