@@ -1,29 +1,21 @@
-﻿namespace EBookMark_ISP.Models
+﻿using System;
+using System.Collections.Generic;
+
+namespace EBookMark_ISP.Models;
+
+public partial class Classroom
 {
-    public class Classroom
-    {
-        public int ID { get; set; }
-        public int number { get; set; }
-        public string usage { get; set; }
-        public int height { get; set; }
-        public int numberOfSeats { get; set; }
-        public string building { get; set; }
+    public int Id { get; set; }
 
+    public string Code { get; set; } = null!;
 
-        public Classroom()
-        {
+    public string UseCase { get; set; } = null!;
 
-        }
-        public Classroom(int id, int number, string usage, int height, int numberOfSeats, string building)
-        {
-            this.ID = id;
-            this.number = number;
-            this.usage = usage;
-            this.height = height;
-            this.numberOfSeats = numberOfSeats;
-            this.building = building;
-        }
+    public int Floor { get; set; }
 
-        public string FullInfo => $"Room: {number}, {usage}, Capacity: {numberOfSeats}, Building: {building}";
-    }
+    public int Capacity { get; set; }
+
+    public string Building { get; set; } = null!;
+
+    public virtual ICollection<SubjectTime> SubjectTimes { get; set; } = new List<SubjectTime>();
 }
