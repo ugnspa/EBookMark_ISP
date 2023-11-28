@@ -1,31 +1,19 @@
-﻿namespace EBookMark_ISP.Models
+﻿using System;
+using System.Collections.Generic;
+
+namespace EBookMark_ISP.Models;
+
+public partial class Schedule
 {
-    public class Schedule
-    {
-        public int ScheduleId { get; set; }
-        public DateTime SemestarStart { get; set; }
-        public DateTime SemestarEnd { get; set; }
+    public int Id { get; set; }
 
-        public string className { get; set; }
+    public DateTime SemesterStart { get; set; }
 
-        public List<LessonTime> Lessons;
+    public DateTime SemesterEnd { get; set; }
 
-        public Schedule()
-        {
-        }
+    public string FkClass { get; set; } = null!;
 
-        public Schedule(int id, DateTime semestarStart, DateTime semestarEnd, string className)
-        {
-            ScheduleId = id;
-            SemestarStart = semestarStart;
-            SemestarEnd = semestarEnd;
-            this.className = className;
-            Lessons = new List<LessonTime>();
-        }
+    public virtual Class FkClassNavigation { get; set; } = null!;
 
-        public void Add(LessonTime time)
-        {
-            Lessons.Add(time);
-        }
-    }
+    public virtual ICollection<SubjectTime> SubjectTimes { get; set; } = new List<SubjectTime>();
 }

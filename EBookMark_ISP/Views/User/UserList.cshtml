@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Class List</title>
+    <title>User List</title>
 
     <style>
         #table {
@@ -42,6 +42,82 @@
     </div>
 
     <table id="table">
+        <!-- Table headers -->
+        <tbody>
+            <tr>
+                <th colspan="2"><center><h2>Admins</h2></center></th>
+            </tr>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+            </tr>
+            @foreach (var admin in ViewBag.Admins)
+            {
+                <tr>
+                    <td>@admin.Username</td>
+                    <td>@admin.Email</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <br><br>
+    <table id="table">
+        <!-- Table headers -->
+
+
+
+        <tbody>
+            <tr>
+                <th colspan="4"><center><h2>Students</h2></center></th>
+            </tr>
+            <tr>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>Email</th>
+            </tr>
+            @foreach (var student in ViewBag.Students)
+            {
+                <tr>
+                    <td>@student.FkUserNavigation.Username</td>
+                    <td>@student.Name</td>
+                    <td>@student.Surname</td>
+                    <td>@student.FkUserNavigation.Email</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <br>
+    <br>
+    <table id="table">
+        <!-- Table headers -->
+            <tr>
+                <th colspan="5"><center><h2>Teachers</h2></center></th>
+            </tr>
+            <tr>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>Phone number</th>
+                <th>Email</th>
+            </tr>
+        <tbody>
+            @foreach (var teacher in ViewBag.Teachers)
+            {
+                <tr>
+                    <td>@teacher.FkUserNavigation.Username</td>
+                    <td>@teacher.Name</td>
+                    <td>@teacher.Surname</td>
+                    <td>@teacher.PhoneNumber</td>
+                    <td>@teacher.FkUserNavigation.Email</td>
+
+                    <!-- Other user details -->
+                </tr>
+            }
+        </tbody>
+    </table>
+
+@*    <table id="table">
         <thead>
             <tr>
                 <th>Name</th>
@@ -58,6 +134,6 @@
                 <td>Student2</td>
             </tr>
         </tbody>
-    </table>
+    </table>*@
 </body>
 </html>
