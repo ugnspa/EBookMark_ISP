@@ -266,6 +266,53 @@ namespace EBookMark_ISP.Controllers
             return RedirectToAction("Userlist");
         }
 
+        [HttpGet]
+        public IActionResult Remove(int id, string type)
+        {
+            string username = HttpContext.Session.GetString("Username");
+            int? permissions = HttpContext.Session.GetInt32("Permissions");
+            if (username == null || permissions == null || permissions < 9)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+
+            Console.WriteLine("Remove user:");
+            Console.WriteLine($"id: {id}");
+            Console.WriteLine($"type: {type}");
+
+            //List<Student> classStudents = _context.Students.Where(s => s.FkClass == code).ToList();
+
+            switch (type)
+            {
+                case "admin":
+                    Admin adminToRemove = _context.Admins.FirstOrDefault(a => a.FkUser == id);
+                    if (adminToRemove != null)
+                        _context.Admins.Remove(adminToRemove);
+                    break;
+                case "student":
+                    Student studentToRemove = _context.Students.FirstOrDefault(a => a.FkUser == id);
+                    if (studentToRemove != null)
+                        _context.Students.Remove(studentToRemove);
+                    break;
+                case "teacher":
+                    Teacher teacherToRemove = _context.Teachers.FirstOrDefault(a => a.FkUser == id);
+                    if (teacherToRemove != null)
+                        _context.Teachers.Remove(teacherToRemove);
+                    break;
+                default:
+                    return RedirectToAction("Userlist");
+            }
+
+
+            User userToRemove = _context.Users.FirstOrDefault(u => u.Id == id);
+            if (userToRemove != null)
+                _context.Users.Remove(userToRemove);
+
+            _context.SaveChanges();
+
+            return RedirectToAction("Userlist");
+        }
+
         private void SendPasswordEmail(string password, string email)
         {
             _emailService.SendEmailAsync("vjaras202@gmail.com", "Temporary password", password);

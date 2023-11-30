@@ -28,6 +28,15 @@
             }
     </style>
 
+    <script>
+        function confirmRemove(id, username, type) {
+            if (confirm("Are you sure you want to remove the user " + username + "?")) {
+                // If the user confirms, redirect to the Remove action
+                window.location.href = "@Url.Action("Remove", "User")" + "?id=" + id +" &type=" + type;
+            }
+        }
+    </script>
+
 </head>
 <body>
     <div>
@@ -56,6 +65,12 @@
                 <tr>
                     <td>@admin.Username</td>
                     <td>@admin.Email</td>
+                    @if (ViewBag.Permissions >= 9)
+                    {
+                        <td>
+                            <a href="javascript:void(0);" onclick="confirmRemove('@admin.Id', '@admin.Username', 'admin');" class="btn btn-danger">Remove</a>
+                        </td>
+                    }
                 </tr>
             }
         </tbody>
@@ -83,6 +98,12 @@
                     <td>@student.Name</td>
                     <td>@student.Surname</td>
                     <td>@student.FkUserNavigation.Email</td>
+                    @if (ViewBag.Permissions >= 9)
+                    {
+                        <td>
+                            <a href="javascript:void(0);" onclick="confirmRemove('@student.FkUser', '@student.FkUserNavigation.Username', 'student');" class="btn btn-danger">Remove</a>
+                        </td>
+                    }
                 </tr>
             }
         </tbody>
@@ -111,7 +132,12 @@
                     <td>@teacher.PhoneNumber</td>
                     <td>@teacher.FkUserNavigation.Email</td>
 
-                    <!-- Other user details -->
+                    @if (ViewBag.Permissions >= 9)
+                    {
+                        <td>
+                            <a href="javascript:void(0);" onclick="confirmRemove('@teacher.FkUser', '@teacher.FkUserNavigation.Username', 'teacher');" class="btn btn-danger">Remove</a>
+                        </td>
+                    }
                 </tr>
             }
         </tbody>
