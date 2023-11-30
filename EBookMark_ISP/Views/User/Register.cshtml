@@ -4,6 +4,14 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
+    <style>
+        #schoolStudent, #schoolTeacher {
+            width: 250px; /* Adjust the width as needed */
+            max-height: 100px; /* Adjust the height as needed */
+            /*overflow-y: auto; /* Allows scrolling if there are many options */
+        }
+    </style>
+
     <script>
 
 
@@ -137,7 +145,7 @@
                     <label for="schoolFilterStudent">School</label>
                     <input type="text" id="schoolFilterStudent" class="form-control" placeholder="Search for a school" autocomplete="off" required>
                     <select id="schoolStudent" name="school" class="form-control" size="5" style="position: absolute; display: none;" required>
-                        <!-- Options will be dynamically populated here -->
+                        
                     </select>
                 </div>
                 <h3>Student information</h3>
