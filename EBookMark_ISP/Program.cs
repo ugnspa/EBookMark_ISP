@@ -1,4 +1,5 @@
 using EBookMark_ISP.Models;
+using EBookMark_ISP.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,10 @@ builder.Services.AddDbContext<EbookmarkContext>(options =>
 {
     options.UseMySQL("Server=localhost;Database=ebookmark;User Id=root;Password=root;"); // Replace with your actual database connection string
 });
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("AWS"));
+builder.Services.AddSingleton<IEmailService, EmailService>();
+
 
 var app = builder.Build();
 
