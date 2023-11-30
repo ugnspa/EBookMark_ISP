@@ -1,4 +1,5 @@
 ﻿using EBookMark_ISP.Models;
+using EBookMark_ISP.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,12 @@ namespace EBookMark_ISP.Controllers
     {
 
         private readonly EbookmarkContext _context;
+        private readonly IEmailService _emailService;
 
-        public UserController(EbookmarkContext context)
+        public UserController(EbookmarkContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
         public IActionResult Index()
         {
@@ -178,6 +181,8 @@ namespace EBookMark_ISP.Controllers
             GetGuardianById(guardianId).Students.Add(student);
             _context.SaveChanges();
 
+            SendPasswordEmail(tempPassword, email);
+
             string currUsername = HttpContext.Session.GetString("Username");
             if (currUsername == null)
             {
@@ -228,6 +233,9 @@ namespace EBookMark_ISP.Controllers
             };
             _context.SchoolTeachers.Add(schoolTeacher);
             _context.SaveChanges();
+            SendPasswordEmail(tempPassword, email);
+
+
 
             string currUsername = HttpContext.Session.GetString("Username");
             if (currUsername == null)
@@ -249,13 +257,18 @@ namespace EBookMark_ISP.Controllers
             Admin admin = new Admin { FkUser = userId };
             _context.Admins.Add(admin);
             _context.SaveChanges();
-
+            SendPasswordEmail(tempPassword, email);
             string currUsername = HttpContext.Session.GetString("Username");
             if (currUsername == null)
             {
                 return RedirectToAction("Dashboard", "Home");
             }
             return RedirectToAction("Userlist");
+        }
+
+        private void SendPasswordEmail(string password, string email)
+        {
+            _emailService.SendEmailAsync("vjaras202@gmail.com", "Temporary password", password);
         }
 
         private void RegisterDefaultAccounts()
