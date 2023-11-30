@@ -123,11 +123,11 @@ namespace EBookMark_ISP.Controllers
         public IActionResult Register()
         {
             string username = HttpContext.Session.GetString("Username");
-            if (username == null)
+            int? permissions = HttpContext.Session.GetInt32("Permissions");
+            if (username == null || permissions == null || permissions < 9)
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-
             var genders = _context.Genders.ToList();
             ViewBag.GenderOptions = new SelectList(genders, "Id", "Name");
 
@@ -292,7 +292,14 @@ namespace EBookMark_ISP.Controllers
                 case "student":
                     Student studentToRemove = _context.Students.FirstOrDefault(a => a.FkUser == id);
                     if (studentToRemove != null)
+                    {
+                        if(studentToRemove.FkClass != null)
+                        {
+                            _context.Classes.FirstOrDefault(c => c.Code == studentToRemove.FkClass).StudentsCount--;
+                        }
                         _context.Students.Remove(studentToRemove);
+                    }
+                        
                     break;
                 case "teacher":
                     Teacher teacherToRemove = _context.Teachers.FirstOrDefault(a => a.FkUser == id);
