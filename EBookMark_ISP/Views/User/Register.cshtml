@@ -1,0 +1,289 @@
+﻿<div class="container mt-5">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <style>
+        #schoolStudent, #schoolTeacher {
+            width: 250px; /* Adjust the width as needed */
+            max-height: 100px; /* Adjust the height as needed */
+            /*overflow-y: auto; /* Allows scrolling if there are many options */
+        }
+    </style>
+
+    <script>
+
+
+        function initializeSchoolFilter(schoolFilterInputId, schoolDropdownId) {
+            var schoolOptions = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.SchoolOptions));
+
+            // Function to update dropdown options
+            function updateDropdownOptions(inputText) {
+                var $schoolDropdown = $("#" + schoolDropdownId);
+                $schoolDropdown.empty(); // Clear the existing options
+
+                // Filter and add matching options
+                schoolOptions.forEach(function (school) {
+                    if (school.Text.toLowerCase().includes(inputText.toLowerCase())) {
+                        $schoolDropdown.append($("<option>", {
+                            value: school.Value,
+                            text: school.Text
+                        }));
+                    }
+                });
+
+                // Show only if there are matching options
+                if ($schoolDropdown.children().length > 0) {
+                    $schoolDropdown.show();
+                } else {
+                    $schoolDropdown.hide();
+                }
+            }
+
+            // Event handler for school filter input
+            $("#" + schoolFilterInputId).on("input", function () {
+                updateDropdownOptions($(this).val());
+            });
+
+            // Event handler for school dropdown selection
+            $("#" + schoolDropdownId).on("change", function () {
+                var selectedText = $("#" + schoolDropdownId + " option:selected").text();
+                $("#" + schoolFilterInputId).val(selectedText); // Set the filter input to the selected option's text
+                $(this).hide(); // Hide the dropdown
+            });
+
+            // Hide dropdown when clicking outside
+            $(document).on("click", function (e) {
+                if (!$(e.target).closest("#" + schoolFilterInputId + ", #" + schoolDropdownId).length) {
+                    $("#" + schoolDropdownId).hide();
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            // Initially hide all forms
+            $("#studentForm, #teacherForm, #adminForm").hide();
+
+            // Event handler for user type selection
+            $("#userType").change(function () {
+                var selectedUserType = $(this).val();
+
+                // Hide all forms
+                $("#studentForm, #teacherForm, #adminForm").hide();
+
+                // Show the selected form
+                $("#" + selectedUserType + "Form").show();
+            });
+
+            initializeSchoolFilter('schoolFilterStudent', 'schoolStudent');
+            initializeSchoolFilter('schoolFilterTeacher', 'schoolTeacher');
+
+            //var schoolOptions = @@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.SchoolOptions));
+
+            //// Function to update dropdown options
+            //function updateDropdownOptions(inputText) {
+            //    var $schoolDropdown = $("#school");
+            //    $schoolDropdown.empty(); // Clear the existing options
+
+            //    // Filter and add matching options
+            //    schoolOptions.forEach(function (school) {
+            //        if (school.Text.toLowerCase().includes(inputText.toLowerCase())) {
+            //            $schoolDropdown.append($("<option>", {
+            //                value: school.Value,
+            //                text: school.Text
+            //            }));
+            //        }
+            //    });
+
+            //    // Show only if there are matching options
+            //    if ($schoolDropdown.children().length > 0) {
+            //        $schoolDropdown.show();
+            //    } else {
+            //        $schoolDropdown.hide();
+            //    }
+            //}
+
+            //// Event handler for school filter input
+            //$("#schoolFilter").on("input", function () {
+            //    updateDropdownOptions($(this).val());
+            //});
+
+            //// Event handler for school dropdown selection
+            //$("#school").on("change", function () {
+            //    var selectedText = $("#school option:selected").text();
+            //    $("#schoolFilter").val(selectedText); // Set the filter input to the selected option's text
+            //    $(this).hide(); // Hide the dropdown
+            //});
+
+            //// Hide dropdown when clicking outside
+            //$(document).on("click", function (e) {
+            //    if (!$(e.target).closest("#schoolFilter, #school").length) {
+            //        $("#school").hide();
+            //    }
+            //});
+        });
+    </script>
+
+
+
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <h2>Register user</h2>
+            <br>
+            <label for="userType">Select User Type:</label>
+            <select id="userType" class="form-control">
+                <option value="" disabled selected>Select user type</option>
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+                <option value="admin">Admin</option>
+            </select>
+            <br>
+            <form id="studentForm" action="Register" method="post">
+                <br>
+                <div class="mb-3">
+                    <label for="schoolFilterStudent">School</label>
+                    <input type="text" id="schoolFilterStudent" class="form-control" placeholder="Search for a school" autocomplete="off" required>
+                    <select id="schoolStudent" name="school" class="form-control" size="5" style="position: absolute; display: none;" required>
+                        
+                    </select>
+                </div>
+                <h3>Student information</h3>
+                <div class="mb-3">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="surname">Surname</label>
+                    <input type="text" id="surname" name="surname" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="birthDate">Birthdate</label>
+                    <input type="date" id="birthDate" name="birthDate" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender" class="form-control" required>
+                        <option value="">Select Gender</option>
+                        @foreach (var gender in ViewBag.GenderOptions)
+                        {
+                            <option value="@gender.Value">@gender.Text</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="personalID">Personal code</label>
+                    <input type="text" id="personalID" name="personalID" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="hasStudentID">Already has ID card</label>
+                    <input type="checkbox" id="hasStudentID" name="hasStudentID">
+                </div>
+
+                <h3>Guardian information</h3>
+                <div class="mb-3">
+                    <label for="guardianName">Guardian name</label>
+                    <input type="text" id="guardianName" name="guardianName" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="guardianSurname">Guardian surname</label>
+                    <input type="text" id="guardianSurname" name="guardianSurname" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="guardianPhoneNumber">Guardian phone number</label>
+                    <input type="text" id="guardianPhoneNumber" name="guardianPhoneNumber" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="guardianEmail">Guardian email</label>
+                    <input type="email" id="guardianEmail" name="guardianEmail" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="guardianAdress">Guardian adress</label>
+                    <input type="text" id="guardianAdress" name="guardianAdress" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add student</button>
+            </form>
+
+
+
+
+            <form id="teacherForm" action="RegisterTeacher" method="post">
+                <h3>Teacher information</h3>
+                <br>
+
+                <div class="mb-3">
+                    <label for="schoolFilterTeacher">School</label>
+                    <input type="text" id="schoolFilterTeacher" class="form-control" placeholder="Search for a school" autocomplete="off" required>
+                    <select id="schoolTeacher" name="school" class="form-control" size="5" style="position: absolute; display: none;" required>
+                        <!-- Options will be dynamically populated here -->
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="surname">Surname</label>
+                    <input type="text" id="surname" name="surname" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="employmentDate">Date of employment</label>
+                    <input type="date" id="employmentDate" name="employmentDate" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender" class="form-control" required>
+                        <option value="">Select Gender</option>
+                        @foreach (var gender in ViewBag.GenderOptions)
+                        {
+                            <option value="@gender.Value">@gender.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="phoneNumber">Phone number</label>
+                    <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="personalID">Personal code</label>
+                    <input type="text" id="personalID" name="personalID" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add teacher</button>
+            </form>
+
+
+
+            <form id="adminForm" action="RegisterAdmin" method="post">
+                <h3>Student information</h3>
+                <div class="mb-3">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add admin</button>
+            </form>
+        </div>
+    </div>
+</div>
