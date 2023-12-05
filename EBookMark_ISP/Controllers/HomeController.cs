@@ -33,10 +33,16 @@ namespace EBookMark_ISP.Controllers
         {
 			string username = HttpContext.Session.GetString("Username");
             int? permissions = HttpContext.Session.GetInt32("Permissions");
-            if(username == null)
+            string? message = HttpContext.Session.GetString("Message");
+            if (username == null)
             {
 				return RedirectToAction("Index", "Home");
 			}
+            if (message != null)
+            {
+                ViewBag.Message = message;
+                HttpContext.Session.Remove("Message");
+            }
             ViewBag.Username = username;
             ViewBag.Permissions = permissions;
             return View();
