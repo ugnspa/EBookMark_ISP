@@ -67,12 +67,19 @@ public partial class EbookmarkContext : DbContext
 
             entity.ToTable("classes");
 
+            entity.HasIndex(e => e.FkSchool, "school_idx");
+
             entity.Property(e => e.Code).HasColumnName("code");
+            entity.Property(e => e.FkSchool).HasColumnName("fk_School");
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
                 .HasColumnName("name");
             entity.Property(e => e.StudentsCount).HasColumnName("students_count");
             entity.Property(e => e.Year).HasColumnName("year");
+
+            entity.HasOne(d => d.FkSchoolNavigation).WithMany(p => p.Classes)
+                .HasForeignKey(d => d.FkSchool)
+                .HasConstraintName("school");
         });
 
         modelBuilder.Entity<Classroom>(entity =>

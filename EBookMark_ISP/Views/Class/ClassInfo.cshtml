@@ -61,27 +61,34 @@
                 <th>Code</th>
                 <td>@ViewBag.Class.Code</td>
             </tr>
-        </tbody>
-    </table>
-    <br><br><br>
-    <h3>Students</h3>
-
-    <table id="classes">
-        <thead>
             <tr>
-                <th>Name</th>
-                <th>Surname</th>
+                <th>School</th>
+                <td>@ViewBag.Class.FkSchoolNavigation.Name</td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach (var student in ViewBag.Students)
-            {
-                <tr>
-                    <td>@student.Name</td>
-                    <td>@student.Surname</td>
-                </tr>
-            }
         </tbody>
     </table>
+    @if(ViewBag.Students.Count > 0)
+    {
+        <br><br><br>
+        <h3>Students</h3>
+    <table id="classes">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Surname</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var student in ViewBag.Students)
+                {
+                        <tr>
+                            <td>@student.Name</td>
+                            <td>@student.Surname</td>
+                        </tr>
+                }
+            </tbody>
+        </table>
+    }
+    
 </body>
 </html>

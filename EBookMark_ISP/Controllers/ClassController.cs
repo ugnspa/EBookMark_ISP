@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using EBookMark_ISP.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Text;
 
 namespace EBookMark_ISP.Controllers
 {
@@ -23,18 +25,17 @@ namespace EBookMark_ISP.Controllers
                 return RedirectToAction("Dashboard", "Home");
             }
             ViewBag.Permissions = permissions;
-            ViewBag.Classes = _context.Classes.ToList();
+            ViewBag.Classes = _context.Classes.Include(c => c.FkSchoolNavigation).ToList();
             return View();
         }
         
         public IActionResult ClassInfo()
         {
-            Console.WriteLine("AAAA");
-            //string username = HttpContext.Session.GetString("Username");
-            //if (username == null)
-            //{
-            //    return RedirectToAction("Dashboard", "Home");
-            //}
+            string username = HttpContext.Session.GetString("Username");
+            if (username == null)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
             return View();
         }
 
@@ -51,13 +52,11 @@ namespace EBookMark_ISP.Controllers
 
             if(permissions == 1)
             {
-                Console.WriteLine("HIIIIIIIIIIIIIIIIIIIIIIII");
                 code = _context.Students.Include(s => s.FkUserNavigation).
                     FirstOrDefault(s => s.FkUserNavigation.Username == username).FkClass;
-                Console.WriteLine(code);
             }
 
-            Class filteredClass = _context.Classes.Where(c => c.Code == code).FirstOrDefault();
+            Class filteredClass = _context.Classes.Include(c => c.FkSchoolNavigation).Where(c => c.Code == code).FirstOrDefault();
 
             List<Student> students = _context.Students.Where(s => s.FkClass == code).ToList();
 
@@ -74,11 +73,15 @@ namespace EBookMark_ISP.Controllers
             {
                 return RedirectToAction("Dashboard", "Home");
             }
+
+            var schools = _context.Schools.ToList();
+            ViewBag.SchoolOptions = new SelectList(schools, "Id", "Name");
+
             return View();
         }
 
         [HttpPost]
-        public IActionResult Create(string name, int year)
+        public IActionResult Create(string name, int year, int school)
         {
             string username = HttpContext.Session.GetString("Username");
             int? permissions = HttpContext.Session.GetInt32("Permissions");
@@ -88,24 +91,26 @@ namespace EBookMark_ISP.Controllers
                 return RedirectToAction("Dashboard", "Home");
             }
 
+            Console.WriteLine(school);
             string code = GenerateClassCode(name, year);
             Class newClass = new Class
             {
                 Code = code,
                 Name = name,
                 StudentsCount = 0,
-                Year = year
+                Year = year,
+                FkSchool = school
             };
 
             _context.Classes.Add(newClass);
             _context.SaveChanges();
-            
+
             return RedirectToAction("Index", "Class");
         }
 
         private string GenerateClassCode(string name, int year)
         {
-            string code = year.ToString() + name + DateTime.Now.Year.ToString();
+            string code = year.ToString() + name + DateTime.Now.Year.ToString() + "_" + GenerateRandomNumberString(4);
             return code;
         }
 
@@ -162,11 +167,11 @@ namespace EBookMark_ISP.Controllers
             }
 
 
-            Class filteredClass = _context.Classes.Where(c => c.Code == code).FirstOrDefault();
+            Class filteredClass = _context.Classes.Include(c => c.FkSchoolNavigation).Where(c => c.Code == code).FirstOrDefault();
 
             List<Student> classStudents = _context.Students.Where(s => s.FkClass == code).ToList();
 
-            List<Student> studentsToAdd = _context.Students.Where(s => s.FkClass == null).ToList();
+            List<Student> studentsToAdd = _context.Students.Where(s => s.FkClass == null && s.FkSchool == filteredClass.FkSchool).ToList();
 
             ViewBag.Class = filteredClass;
             ViewBag.Students = classStudents;
@@ -263,6 +268,21 @@ namespace EBookMark_ISP.Controllers
 
             return RedirectToAction("Modify", "Class", new { code = classCode });
         }
+
+        public static string GenerateRandomNumberString(int length)
+        {
+            Random random = new Random();
+            StringBuilder randomNumberString = new StringBuilder();
+
+            for (int i = 0; i < length; i++)
+            {
+                // Generate a single digit (0-9) and append it to the string
+                randomNumberString.Append(random.Next(0, 10));
+            }
+
+            return randomNumberString.ToString();
+        }
+
         //[HttpPost]
         //public IActionResult AddStudentToClass(string id)
         //{
