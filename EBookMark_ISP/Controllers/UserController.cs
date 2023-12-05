@@ -432,23 +432,9 @@ namespace EBookMark_ISP.Controllers
             _context.SaveChanges();
         }
 
-        public static string GenerateRandomNumberString(int length)
-        {
-            Random random = new Random();
-            StringBuilder randomNumberString = new StringBuilder();
-
-            for (int i = 0; i < length; i++)
-            {
-                // Generate a single digit (0-9) and append it to the string
-                randomNumberString.Append(random.Next(0, 10));
-            }
-
-            return randomNumberString.ToString();
-        }
-
         private int RegisterUser(string username, string password, string email, int role)
         {
-            
+
             User user = new User
             {
                 Username = username,
@@ -522,6 +508,18 @@ namespace EBookMark_ISP.Controllers
             return temporaryPassword;
         }
 
-    }
+        public static string GenerateRandomNumberString(int length)
+        {
+            Random random = new Random();
+            StringBuilder randomNumberString = new StringBuilder();
 
+            for (int i = 0; i < length; i++)
+            {
+                // Generate a single digit (0-9) and append it to the string
+                randomNumberString.Append(random.Next(0, 10));
+            }
+
+            return randomNumberString.ToString();
+        }
+    }
 }
