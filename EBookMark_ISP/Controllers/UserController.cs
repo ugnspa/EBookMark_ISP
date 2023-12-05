@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using NuGet.DependencyResolver;
 using Org.BouncyCastle.Bcpg;
+using Org.BouncyCastle.Tls;
 using System.Text;
 using System.Xml.Linq;
 using static Azure.Core.HttpHeader;
@@ -88,7 +89,9 @@ namespace EBookMark_ISP.Controllers
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-            return View();
+            string password = _context.Users.Where(u => u.Username == username).First().Password;
+
+            return View((object)password);
         }
 
         [HttpPost]
@@ -98,7 +101,21 @@ namespace EBookMark_ISP.Controllers
             if (username == null) {
                 return RedirectToAction("Dashboard", "Home");
             }
-            return RedirectToAction("Index");
+             
+            try
+            {
+                User user = _context.Users.FirstOrDefault(u => u.Username == username);
+                user.Password = Models.User.ComputeSha256Hash(newPassword);
+                _context.SaveChanges();
+                HttpContext.Session.SetString("Message", "Password updated successfully");
+            }
+            catch
+            {
+                HttpContext.Session.SetString("Message", "Password was unable to update");
+                return RedirectToAction("Dashboard", "Home");
+            }
+
+            return RedirectToAction("Dashboard","Home");
         }
 
         public IActionResult UserList()
