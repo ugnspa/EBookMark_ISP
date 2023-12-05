@@ -1,7 +1,14 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
-
+<head>
+    <link rel="stylesheet" href="~/css/alert_style.css" asp-append-version="true" />
+</head>
+<div id="customAlert" class="custom-alert" style="display:none;">
+    <div class="custom-alert-content">
+        <p id="customAlertMessage"></p>
+    </div>
+</div>
 <div class="container">
     <div class="row">
         <div class="col-md-6 offset-md-3">
@@ -40,12 +47,27 @@
     }
 }
 
+<script>
+function showCustomAlert(message) {
+    document.getElementById('customAlertMessage').innerText = message;
+    document.getElementById('customAlert').style.display = 'block';
+
+    setTimeout(function() {
+        document.getElementById('customAlert').style.display = 'none';
+    }, 2500);
+}
+
+function closeCustomAlert() {
+    document.getElementById('customAlert').style.display = 'none';
+}
+
 @if(ViewBag.Message != null)
 {
-    <script type="text/javascript">
-        window.onload = function() {
-            alert('@Html.Raw(ViewBag.Message)');
-        };
-    </script>
+    <text>
+    window.onload = function() {
+        showCustomAlert('@Html.Raw(ViewBag.Message)');
+    };
+    </text>
 }
+</script>
 
