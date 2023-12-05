@@ -43,6 +43,7 @@
                 <th>Student Count</th>
                 <th>Year</th>
                 <th>Code</th>
+                <th>School</th>
                 @if(ViewBag.Permissions >= 5)
                 {
                     <th>Actions</th>
@@ -81,6 +82,7 @@
                     <td>@classData.StudentsCount</td>
                     <td>@classData.Year</td>
                     <td>@classData.Code</td>
+                    <td>@classData.FkSchoolNavigation.Name</td>
                     @if (ViewBag.Permissions >= 9)
                     {
                         <td>

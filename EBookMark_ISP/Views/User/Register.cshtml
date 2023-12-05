@@ -14,7 +14,6 @@
 
     <script>
 
-
         function initializeSchoolFilter(schoolFilterInputId, schoolDropdownId) {
             var schoolOptions = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.SchoolOptions));
 
@@ -79,49 +78,6 @@
             initializeSchoolFilter('schoolFilterStudent', 'schoolStudent');
             initializeSchoolFilter('schoolFilterTeacher', 'schoolTeacher');
 
-            //var schoolOptions = @@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.SchoolOptions));
-
-            //// Function to update dropdown options
-            //function updateDropdownOptions(inputText) {
-            //    var $schoolDropdown = $("#school");
-            //    $schoolDropdown.empty(); // Clear the existing options
-
-            //    // Filter and add matching options
-            //    schoolOptions.forEach(function (school) {
-            //        if (school.Text.toLowerCase().includes(inputText.toLowerCase())) {
-            //            $schoolDropdown.append($("<option>", {
-            //                value: school.Value,
-            //                text: school.Text
-            //            }));
-            //        }
-            //    });
-
-            //    // Show only if there are matching options
-            //    if ($schoolDropdown.children().length > 0) {
-            //        $schoolDropdown.show();
-            //    } else {
-            //        $schoolDropdown.hide();
-            //    }
-            //}
-
-            //// Event handler for school filter input
-            //$("#schoolFilter").on("input", function () {
-            //    updateDropdownOptions($(this).val());
-            //});
-
-            //// Event handler for school dropdown selection
-            //$("#school").on("change", function () {
-            //    var selectedText = $("#school option:selected").text();
-            //    $("#schoolFilter").val(selectedText); // Set the filter input to the selected option's text
-            //    $(this).hide(); // Hide the dropdown
-            //});
-
-            //// Hide dropdown when clicking outside
-            //$(document).on("click", function (e) {
-            //    if (!$(e.target).closest("#schoolFilter, #school").length) {
-            //        $("#school").hide();
-            //    }
-            //});
         });
     </script>
 

@@ -65,12 +65,22 @@
             <label for="code">Code:</label>
             <input type="text" id="code" name="code" class="form-control" value=@ViewBag.Class.Code readonly required>
         </div>
+
+        <div class="form-group">
+            <label for="school">School:</label>
+            <input type="text" id="school" name="school" class="form-control" value="@ViewBag.Class.FkSchoolNavigation.Name" readonly required>
+        </div>
+        <br>
         <button type="submit" class="btn btn-primary">Update Class</button>
     </form>
 
-    <h3>Students</h3>
+    <br>
+    
 
-    <table id="table">
+    @if(ViewBag.Students.Count > 0)
+    {
+        <h3>Students</h3>
+        <table id="table">
         <thead>
             <tr>
                 <th>Name</th>
@@ -89,15 +99,17 @@
                     <td>@student.Name</td>
                     <td>@student.Surname</td>
                     <td>
-@*                        <a href="@Url.Action("RemoveStudentFromClass", "Class", new { classCode = ViewBag.Class.Code, studentId = student.FkUser })" class="btn btn-danger">Remove student from Class</a>
-*@                        <a href="javascript:void(0);" onclick="confirmRemove('@student.FkClass', '@student.FkUser', '@student.Name', '@student.Surname');" class="btn btn-danger">Remove student from class</a>
+                    <a href="javascript:void(0);" onclick="confirmRemove('@student.FkClass', '@student.FkUser', '@student.Name', '@student.Surname');" class="btn btn-danger">Remove student from class</a>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
+    }
 
-    <h3>Add Students to Class</h3>
+    @if(ViewBag.StudentsToAdd.Count > 0)
+    {
+        <h3>Add Students to Class</h3>
     <!-- Table of students and button to add new students -->
     <table id="table">
         <thead>
@@ -128,5 +140,7 @@
             }
         </tbody>
     </table>
+    }
+    
 </body>
 </html>

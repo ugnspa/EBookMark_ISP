@@ -336,6 +336,16 @@ namespace EBookMark_ISP.Controllers
 
             return RedirectToAction("Userlist");
         }
+        public IActionResult ClassInfo()
+        {
+            string currUsername = HttpContext.Session.GetString("Username");
+            if (currUsername == null)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+            return RedirectToAction("ClassInfo", "Class");
+
+        }
 
         private void SendPasswordEmail(string password, string email)
         {
@@ -389,27 +399,59 @@ namespace EBookMark_ISP.Controllers
         }
         private void RegisterDefaultAdmin()
         {
-            int userId = RegisterUser("admin","admin", "admin@email.com", 10);
+            int userId = RegisterUser("admin", "admin", "admin@email.com", 10);
 
             Admin admin = new Admin { FkUser = userId };
 
             _context.Admins.Add(admin);
             _context.SaveChanges();
         }
-        public IActionResult ClassInfo()
-        {
-            string currUsername = HttpContext.Session.GetString("Username");
-            if (currUsername == null)
-            {
-                return RedirectToAction("Dashboard", "Home");
-            }
-            return RedirectToAction("ClassInfo", "Class");
 
+        private void RegisterDefaultStudent(string name, string surname, int schoolId)
+        {
+            string username = (name.Substring(0, 3) + surname.Substring(0, 3)).ToLower();
+            int userId = RegisterUser(username, username, username + "@email.com", 1);
+
+            var student = new Student
+            {
+                PersonalCode = GenerateRandomNumberString(11),
+                Name = name,
+                Surname = surname,
+                BirthDate = DateTime.Now,
+                Document = true,
+                Gender = 1, // Assuming gender is an integer ID
+                FkUser = userId, // Use the generated User ID
+                FkSchool = 1, // Replace with the correct school ID
+                FkGuardian = 1 // Replace with the correct guardian ID
+            };
+
+            _context.Students.Add(student);
+            _context.SaveChanges();
+        }
+
+        private void RegisterDefaultTeacher(string name, string surname)
+        {
+            string username = (name.Substring(0, 3) + surname.Substring(0, 3)).ToLower();
+            int userId = RegisterUser(username, username, username + "@email.com", 5);
+
+            Teacher teacher = new Teacher
+            {
+                PersonalCode = GenerateRandomNumberString(11),
+                Name = name,
+                Surname = surname,
+                EmploymentDate = DateTime.Now,
+                PhoneNumber = "+370" + GenerateRandomNumberString(8),
+                Gender = 1,
+                FkUser = userId
+            };
+
+            _context.Teachers.Add(teacher);
+            _context.SaveChanges();
         }
 
         private int RegisterUser(string username, string password, string email, int role)
         {
-            
+
             User user = new User
             {
                 Username = username,
@@ -483,6 +525,18 @@ namespace EBookMark_ISP.Controllers
             return temporaryPassword;
         }
 
-    }
+        public static string GenerateRandomNumberString(int length)
+        {
+            Random random = new Random();
+            StringBuilder randomNumberString = new StringBuilder();
 
+            for (int i = 0; i < length; i++)
+            {
+                // Generate a single digit (0-9) and append it to the string
+                randomNumberString.Append(random.Next(0, 10));
+            }
+
+            return randomNumberString.ToString();
+        }
+    }
 }
