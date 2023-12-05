@@ -1,18 +1,15 @@
-html {
-  font-size: 14px;
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%; 
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px; 
+    }
 }
 
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
+.container {
+    min-height: 85%; 
 }
