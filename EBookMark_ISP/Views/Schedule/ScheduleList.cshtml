@@ -1,4 +1,4 @@
-﻿@model List<Schedule> // Assuming your model is a list of Schedule objects
+﻿@*@model List<Schedule> // Assuming your model is a list of Schedule objects
 
 <h2>Schedule List</h2>
 
@@ -12,7 +12,6 @@
         <th>Class Name</th>
         <th>Semester Start</th>
         <th>Semester End</th>
-        <th>Actions</th>
     </tr>
     @foreach (var schedule in Model)
     {
@@ -26,7 +25,20 @@
                         <input type="submit" value="View" />
                     </form>
                 </td>
+                <td>
+                    <form asp-controller="Schedule" asp-action="DeleteSchedule" method="get">
+                        <input type="hidden" name="scheduleId" value="@schedule.ScheduleId" />
+                        <input type="submit" value="Delete" />
+                    </form>
+                </td>
+                <td>
+                    <form asp-controller="Schedule" asp-action="EditSchedule" method="get">
+                        <input type="hidden" name="scheduleId" value="@schedule.ScheduleId" />
+                        <input type="submit" value="Edit" />
+                    </form>
+                </td>
             </tr>
     }
 </table>
 
+*@

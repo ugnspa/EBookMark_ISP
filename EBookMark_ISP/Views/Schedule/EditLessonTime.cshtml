@@ -1,0 +1,73 @@
+﻿@*@model LessonTime
+
+@{
+    ViewData["Title"] = "Edit Lesson Time";
+}
+
+<h2>Edit Lesson Time</h2>
+
+<form asp-controller="Schedule" asp-action="UpdateLessonTime" method="post">
+    @Html.HiddenFor(m => m.Id) <!-- Preserve the ID -->
+
+    <div>
+        <label for="start">Start Time:</label>
+        <input type="datetime-local" id="start" name="Start" value="@Model.Start.ToString("yyyy-MM-ddTHH:mm")" required />
+    </div>
+
+    <div>
+        <label for="end">End Time:</label>
+        <input type="datetime-local" id="end" name="End" value="@Model.End.ToString("yyyy-MM-ddTHH:mm")" required />
+    </div>
+
+    <div>
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="Description" value="@Model.Description" required />
+    </div>
+
+    <div>
+        <label for="type">Type:</label>
+        <input type="text" id="type" name="Type" value="@Model.Type" required />
+    </div>
+
+    <div>
+        <label for="subject">Subject:</label>
+        <input type="text" id="subject" name="Subject" value="@Model.Subject" required />
+    </div>
+
+    <!-- Classroom Fields -->
+    <div>
+    <label for="classroomId">Classroom:</label>
+    @Html.DropDownListFor(
+        m => m.room.number, 
+        (SelectList)ViewBag.ClassroomSelectList, 
+        null, // No default option
+        new { @class = "form-control" }
+    )
+</div>
+    @*<div>
+        <label for="number">Classroom Number:</label>
+        <input type="number" id="number" name="room.number" value="@Model.room?.number" required />
+    </div>
+
+    <div>
+        <label for="usage">Classroom Usage:</label>
+        <input type="text" id="usage" name="room.usage" value="@Model.room?.usage" required />
+    </div>
+
+    <div>
+        <label for="height">Classroom Height:</label>
+        <input type="number" id="height" name="room.height" value="@Model.room?.height" required />
+    </div>
+
+    <div>
+        <label for="numberOfSeats">Number of Seats:</label>
+        <input type="number" id="numberOfSeats" name="room.numberOfSeats" value="@Model.room?.numberOfSeats" required />
+    </div>
+
+    <div>
+        <label for="building">Building:</label>
+        <input type="text" id="building" name="room.building" value="@Model.room?.building" required />
+    </div>*@
+    @*
+    <button type="submit">Update Lesson Time</button>
+</form>*@

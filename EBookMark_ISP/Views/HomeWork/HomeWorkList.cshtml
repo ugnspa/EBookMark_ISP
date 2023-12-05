@@ -1,0 +1,38 @@
+﻿@model List<string>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Homework List</title>
+</head>
+<body>
+    <h1>Homework List</h1>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Title</th>
+                
+        </thead>
+        <tbody>
+            @foreach (string homework in Model)
+            {
+                <tr>
+                    <td>
+                        <a class="btn btn-primary" asp-controller="HomeWork" asp-action="HomeWork" asp-route-name="@homework">@homework</a>
+                        
+
+                </td>
+                    
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (ViewBag.Permissions >= 5)
+    {
+        <div class="col-md-4 mb-3">
+            <a class="btn btn-primary btn-lg" href="@Url.Action("AddHomeWork", "HomeWork")">Add HomeWork</a>
+    </div>}
+</body>
+</html>

@@ -1,1 +1,45 @@
-﻿
+﻿@*@model Schedule
+
+@{
+    ViewData["Title"] = "Edit Schedule";
+}
+
+<h2>Edit Schedule</h2>
+
+<form asp-controller="Schedule" asp-action="UpdateSchedule" method="post">
+    @Html.HiddenFor(m => m.ScheduleId) <!-- Hidden ID to ensure it gets posted back, but not editable -->
+
+    <div>
+        <label for="semesterStart">Semester Start:</label>
+        <input type="date" id="semesterStart" name="SemestarStart" value="@Model.SemestarStart.ToString("yyyy-MM-dd")" required />
+    </div>
+
+    <div>
+        <label for="semesterEnd">Semester End:</label>
+        <input type="date" id="semesterEnd" name="SemestarEnd" value="@Model.SemestarEnd.ToString("yyyy-MM-dd")" required />
+    </div>
+
+    <div>
+        <label for="className">Class Name:</label>
+        <input type="text" id="className" name="className" value="@Model.className" required />
+    </div>
+
+    <div style="display: flex; align-items: center;">
+        <h3 style="margin-right: 10px;">Lessons</h3>
+        <a asp-controller="Schedule" asp-action="AddLessonTime" class="btn btn-success btn-sm">Add Lesson</a>
+    </div>
+    @foreach (var lesson in Model.Lessons)
+    {
+        <div class="lesson" style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+            <span>Start: @lesson.Start.ToString("g")</span>
+            <span>Subject: @lesson.Subject</span>
+            <a asp-controller="Schedule" asp-action="EditLessonTime" asp-route-id="@lesson.Id" class="btn btn-primary btn-sm">Edit</a>
+            <a asp-controller="Schedule" asp-action="DeleteLessonTime" asp-route-id="@lesson.Id" class="btn btn-danger btn-sm">Delete</a>
+        </div>
+    }
+        
+
+    <button type="submit">Update Schedule</button>
+</form>
+<a href="@Url.Action("Index", "Schedule")" class="btn btn-default">Return to Schedule List</a>
+*@

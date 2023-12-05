@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Class Information</title>
+
+    <style>
+        #classes {
+            font-family: Arial;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+            #classes td {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+
+            #classes tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+
+            #classes tr:hover {
+                background-color: #ddd;
+            }
+
+            #classes th {
+                padding: 8px;
+            }
+    </style>
+
+    
+
+</head>
+<body>
+    <div>
+        <h1>Class information</h1>
+@*        @if (ViewBag.Permissions >= 9)
+        {
+            <div style="text-align: right;">
+                <a href="@Url.Action("Create", "Class")" class="btn btn-success">Create Class</a>
+            </div>
+        }*@
+
+    </div>
+
+    <table id="classes">
+        <tbody>
+            <tr>
+                <th>Name</th>
+                <td>@ViewBag.Class.Name</td>
+            </tr>
+            <tr>
+                <th>Student Count</th>
+                <td>@ViewBag.Class.StudentsCount</td>
+            </tr>
+            <tr>
+                <th>Year</th>
+                <td>@ViewBag.Class.Year</td>
+            </tr>
+            <tr>
+                <th>Code</th>
+                <td>@ViewBag.Class.Code</td>
+            </tr>
+        </tbody>
+    </table>
+    <br><br><br>
+    <h3>Students</h3>
+
+    <table id="classes">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Surname</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in ViewBag.Students)
+            {
+                <tr>
+                    <td>@student.Name</td>
+                    <td>@student.Surname</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>

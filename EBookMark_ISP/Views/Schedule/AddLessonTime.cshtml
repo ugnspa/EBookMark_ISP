@@ -1,0 +1,54 @@
+﻿@*@model LessonTime
+
+@{
+    ViewData["Title"] = "Add Lesson Time";
+}
+
+<h2>Add Lesson Time</h2>
+
+<form asp-controller="Schedule" asp-action="CreateLessonTime" method="post">
+
+    <!-- Start Time -->
+    <div>
+        <label for="start">Start Time:</label>
+        <input type="datetime-local" id="start" name="Start" required />
+    </div>
+
+    <!-- End Time -->
+    <div>
+        <label for="end">End Time:</label>
+        <input type="datetime-local" id="end" name="End" required />
+    </div>
+
+    <!-- Description -->
+    <div>
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="Description" required />
+    </div>
+
+    <!-- Type -->
+    <div>
+        <label for="type">Type:</label>
+        <input type="text" id="type" name="Type" required />
+    </div>
+
+    <!-- Subject -->
+    <div>
+        <label for="subject">Subject:</label>
+        <input type="text" id="subject" name="Subject" required />
+    </div>
+
+    <!-- Classroom Dropdown -->
+    <div>
+        <label for="classroomId">Classroom:</label>
+        @Html.DropDownListFor(
+        model => model.room.number,
+        ViewBag.ClassroomSelectList as SelectList,
+        htmlAttributes: new { @class = "form-control" }
+        )
+)
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit">Add Lesson Time</button>
+</form>*@

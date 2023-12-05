@@ -1,4 +1,4 @@
-﻿@using System.Text.Encodings.Web
+﻿@*@using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Html
 <style>
     /* Tooltip container */
@@ -47,7 +47,7 @@
 
 <h1>Weekly Schedule (@ViewBag.WeekStartDate.ToString("MM/dd/yyyy") to @ViewBag.WeekEndDate.ToString("MM/dd/yyyy"))</h1>
 
-@* Week selection dropdown list *@
+@* Week selection dropdown list
 <form asp-controller="Schedule" asp-action="WeeklySchedule" method="get">
     <label for="weekDropdown">Select Week:</label>
     <select id="weekDropdown" name="selectedWeek" onchange="this.form.submit()">
@@ -105,4 +105,4 @@
 
         return new HtmlString("-");
     }
-}
+}*@
