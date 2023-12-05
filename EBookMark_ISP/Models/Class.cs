@@ -13,6 +13,10 @@ public partial class Class
 
     public int Year { get; set; }
 
+    public int? FkSchool { get; set; }
+
+    public virtual School? FkSchoolNavigation { get; set; }
+
     public virtual ICollection<Schedule> Schedules { get; set; } = new List<Schedule>();
 
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();
