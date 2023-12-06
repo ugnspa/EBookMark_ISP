@@ -94,8 +94,8 @@
                               $"Start: {lesson.StartDate.ToString("g")}\n" +
                               $"End: {lesson.EndDate.ToString("g")}\n" +
                               $"Description: {lesson.Descrtiption}\n" +
-                              $"Type: {lesson.Type}\n" +
-                              $"Classroom: {(lesson.FkClassroomNavigation.Code != null ? lesson.FkClassroomNavigation.Code.ToString() : "-")}";
+                              $"Type: {lesson.TypeNavigation.Name}\n" +
+                              $"Classroom: {(lesson.FkClassroomNavigation != null && lesson.FkClassroomNavigation.Code != null ? lesson.FkClassroomNavigation.Code.ToString() : "-")}";
             // Escape the string for use in an HTML attribute.
             var escapedTooltipInfo = HtmlEncoder.Default.Encode(tooltipInfo);
 
