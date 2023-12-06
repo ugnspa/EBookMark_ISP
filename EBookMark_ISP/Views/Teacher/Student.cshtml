@@ -1,13 +1,30 @@
-﻿@model string
+﻿@model Student
+<head>
+    <link rel="stylesheet" href="~/css/tiles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/alert_style.css" asp-append-version="true" />
 
-<div class="container border text-center pb-5 mt-5">
-    <h1 class="my-4">@Model</h1>
+</head>
+@Html.Partial("_Alert")
+<div class="container text-center pb-5 mt-5">
+    <h1 class="my-4 name">@Model.Name @Model.Surname</h1>
     <div class="row">
         <div class="col-md-4 mb-3">
-            <a class="btn btn-primary btn-lg" asp-controller="Teacher" asp-action="Subjects" asp-route-name="@Model">Write mark for student</a>
+            <div class="card tiles">
+                <div class="card-body">
+                    <a href="@Url.Action("Subjects", "Teacher", new { student_id = Model.FkUser })" class="stretched-link">
+                        <h5 class="card-title">Write Mark</h5>
+                    </a>
+                </div>
+            </div>
         </div>
         <div class="col-md-4 mb-3">
-            <a class="btn btn-primary btn-lg" asp-controller="User" asp-action="GradeBook" asp-route-name="@Model">Gradebook</a>
+            <div class="card tiles">
+                <div class="card-body">
+                    <a href="@Url.Action("GradeBook", "User", new { student_id = Model.FkUser })" class="stretched-link">
+                        <h5 class="card-title">Gradebook</h5>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

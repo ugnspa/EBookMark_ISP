@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using EBookMark_ISP.Models;
 using Amazon.SimpleEmail.Model;
 using EBookMark_ISP.Services;
+using ZstdSharp.Unsafe;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EBookMark_ISP.Controllers
 {
@@ -68,47 +70,141 @@ namespace EBookMark_ISP.Controllers
 
         }
 
-        public IActionResult Student(string name)
+        public IActionResult Student(int student_id)
         {
             if (!AccessTeacher())
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-            return View("Student", name);
+            Student student = _context.Students.FirstOrDefault(s=>s.FkUser == student_id);
+            if(student == null)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+            string? message = HttpContext.Session.GetString("Message");
+            if (message != null)
+            {
+                ViewBag.Message = message;
+                HttpContext.Session.Remove("Message");
+            }
+            return View("Student", student);
         }
 
-        public IActionResult Subjects(string name)
+        public IActionResult Subjects(int student_id)
         {
             if (!AccessTeacher())
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-            List<string> subjects = new List<string>();
-            subjects.Add(name);
-            subjects.Add("Matke");
-            subjects.Add("Anglu");
-            subjects.Add("Lietuviu");
-            return View(subjects);
+
+            var username = HttpContext.Session.GetString("Username");
+            var teacher = _context.Users.FirstOrDefault(t => t.Username == username);
+            if (teacher == null)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+
+            var teacherSubjects = _context.Subjects.Where(ts => ts.FkTeacher == teacher.Id).ToList();
+            var subjectTimePairs = teacherSubjects
+                .SelectMany(ts => _context.SubjectTimes.Where(st => ts.Code == st.FkSubject))
+                .Select(st => new { st.FkSchedule, st.FkSubject })
+                .Distinct()
+                .ToList();
+
+            var student = _context.Students.FirstOrDefault(st => st.FkUser == student_id);
+            if (student == null)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+
+            var studentSchedules = _context.Schedules.Where(sh => sh.FkClass == student.FkClass).ToList();
+
+            var teacherStudentSubjects = new Dictionary<Schedule, List<Subject>>();
+            foreach (var schedule in studentSchedules)
+            {
+                var subjectCodes = subjectTimePairs
+                    .Where(p => p.FkSchedule == schedule.Id)
+                    .Select(p => p.FkSubject)
+                    .Distinct()
+                    .ToList();
+
+                var subjects = _context.Subjects.Where(s => subjectCodes.Contains(s.Code)).ToList();
+                if (!subjects.IsNullOrEmpty())
+                {
+                    teacherStudentSubjects[schedule] = subjects;
+                }
+            }
+
+            var viewModel = new StudentSubjectsViewModel
+            {
+                student = student,
+                ScheduleSubjects = teacherStudentSubjects
+            };
+
+            foreach (var scheduleSubjectsPair in teacherStudentSubjects)
+            {
+                Schedule schedule = scheduleSubjectsPair.Key;
+                List<Subject> subjects = scheduleSubjectsPair.Value;
+
+                Console.WriteLine($"Schedule ID: {schedule.Id}");
+                foreach (Subject subject in subjects)
+                {
+                    Console.WriteLine($"   Subject Code: {subject.Code}, Subject Name: {subject.Name}");
+                }
+            }
+
+            return View(viewModel);
         }
-        public IActionResult WriteMark(string subject, string name)
+
+        public IActionResult WriteMark(int student_id, int schedule_id, string subject_code)
         {
             if (!AccessTeacher())
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-            List<string> strings = new List<string>();
-            strings.Add(name);
-            strings.Add(subject);
-            return View(strings);
+            Student student = _context.Students.FirstOrDefault(st => st.FkUser == student_id);
+            Subject subject = _context.Subjects.FirstOrDefault(sb => sb.Code == subject_code);
+            var used_subject_times = _context.Marks.Where(ma => ma.FkStudent == student_id).Select(ma => ma.FkSubjectTime).ToList();
+            List<SubjectTime> subjectTimes = _context.SubjectTimes.Where(st => st.FkSubject.Equals(subject_code) && st.FkSchedule == schedule_id && !used_subject_times.Contains(st.Id)).ToList();
+
+            var viewModel = new WriteMarkViewModel
+            {
+                student = student,
+                subject = subject,
+                subjectTimes = subjectTimes
+            };
+
+            return View(viewModel);
         }
         [HttpPost]
-        public IActionResult WriteMark(string subject, string name, string mark)
+        public IActionResult WriteMark(int subject_time_id, int student_id,string mark, string comment)
         {
             if (!AccessTeacher())
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-            return RedirectToAction("Student", new { name });
+            try
+            {
+                var student_mark = new Mark
+                {
+                    RegistrationDate = DateTime.Now,
+                    Mark1 = mark,
+                    Comment = comment,
+                    FkStudent = student_id,
+                    FkSubjectTime = subject_time_id
+                };
+                _context.Marks.Add(student_mark);
+                _context.SaveChanges();
+                HttpContext.Session.SetString("Message", "Mark Has Been Written Successfully");
+            }
+            catch
+            {
+                HttpContext.Session.SetString("Message", "Error Occurred While Writting The Mark");
+                return RedirectToAction("Student", new { student_id });
+            }
+
+
+            return RedirectToAction("Student", new { student_id });
 
         }
 

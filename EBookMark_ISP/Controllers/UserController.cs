@@ -50,13 +50,13 @@ namespace EBookMark_ISP.Controllers
             }
             return true;
         }
-        public IActionResult GradeBook(string name)
+        public IActionResult GradeBook(int student_id)
         {
             if (!AccessWatcher())
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-            Console.WriteLine(name);
+            
             Dictionary<string, string[]> dict = new();
             string[] marksAnglu = new string[10];
             string[] marksMatke = new string[10];
@@ -69,14 +69,14 @@ namespace EBookMark_ISP.Controllers
             dict["Matke"] = marksMatke;
             dict["Anglu"] = marksAnglu;
             int? permissions = HttpContext.Session.GetInt32("Permissions");
-            if (name == null && permissions == 1)
+            if (student_id == null && permissions == 1)
             {
                 string username = HttpContext.Session.GetString("Username");
                 ViewBag.StudentName = username;
             }
             else
             {
-                ViewBag.StudentName = name;
+                ViewBag.StudentName = student_id;
             }
             ViewBag.Permissions = permissions;
             return View(dict);
