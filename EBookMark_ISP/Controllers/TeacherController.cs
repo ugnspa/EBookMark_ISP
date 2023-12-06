@@ -1,10 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using EBookMark_ISP.ViewModels;
+using Microsoft.EntityFrameworkCore;
+using EBookMark_ISP.Models;
+using Amazon.SimpleEmail.Model;
+using EBookMark_ISP.Services;
 
 namespace EBookMark_ISP.Controllers
 {
     public class TeacherController : Controller
     {
+        private readonly EbookmarkContext _context;
+        public TeacherController(EbookmarkContext context)
+        {
+            _context = context;
+        }
         public IActionResult Index()
         {
             return RedirectToAction("Dashboard", "Home");
@@ -30,12 +39,32 @@ namespace EBookMark_ISP.Controllers
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-            List<string> students = new List<string>();
-            students.Add("student1");
-            students.Add("student2");
-            students.Add("student3");
-            students.Add("student4");
-            return View(students);
+            string username = HttpContext.Session.GetString("Username");
+            var teacher = _context.Users.FirstOrDefault(t => t.Username == username);
+            List<string> teacher_classes = _context.Subjects
+                                          .Where(s => s.FkTeacher == teacher.Id)
+                                          .SelectMany(s => s.SubjectTimes)
+                                          .Select(st => st.FkSchedule)
+                                          .Distinct()
+                                          .Join(_context.Schedules, scheduleId => scheduleId, schedule => schedule.Id, (scheduleId, schedule) => schedule.FkClass)
+                                          .Distinct()
+                                          .ToList();
+            List<ClassStudentsViewModel> studentsViewModels = new List<ClassStudentsViewModel>();
+            foreach(string classcode in teacher_classes)
+            {
+                Class cl = _context.Classes.FirstOrDefault(c=> c.Code == classcode);
+                if(cl != null)
+                {
+                    List<Student> students = _context.Students.Where(st => st.FkClass == cl.Code).ToList();
+                    studentsViewModels.Add(new ClassStudentsViewModel
+                    {
+                        classObject= cl,
+                        students = students
+                    });
+                }
+            }
+
+            return View(studentsViewModels);
 
         }
 

@@ -1,0 +1,40 @@
+﻿.student-tile {
+    transition: transform 0.4s ease-in-out, border-top-color 0.5s ease-in-out;
+    text-underline-offset: 100%;
+    box-shadow: 10px 10px 8px rgba(0, 0, 0, 0.4);
+    border-top-color: black;
+    border-top-width: 6px;
+    margin-bottom:10px;
+
+}
+
+    .student-tile:hover {
+        transform: translateY(-10px);
+        transition: transform 0.3s ease-in-out, border-top-color 0.3s ease-in-out; /* Faster transition for border color when hovered */
+        border-top-color: yellow;
+    }
+
+    .student-tile .card-body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 150px;
+    }
+
+    .student-tile .card-title {
+        margin-bottom: 0;
+        font-weight: bold;
+        font-size: 24px;
+        color: #000000;
+        text-decoration: underline;
+        text-decoration-color: #000000;
+        text-decoration-thickness: 2px;
+    }
+
+.class-name {
+    margin-bottom: 1.2rem;
+    padding-left: 1rem;
+    text-align: left;
+    font-family: 'Arial', sans-serif;
+    border-bottom: 3px solid #DCDCDC;
+}
