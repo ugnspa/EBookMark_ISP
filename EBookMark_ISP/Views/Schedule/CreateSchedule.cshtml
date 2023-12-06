@@ -1,10 +1,12 @@
 ﻿@{
     ViewData["Title"] = "Create Schedule";
 }
-
+@model List<Class>
 <h1>Create Schedule</h1>
 
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 <form asp-controller="Schedule" asp-action="AddSchedule" method="post">
+
     <div class="form-group">
         <label for="SemestarStart">Start of Semester:</label>
         <input type="date" id="SemestarStart" name="SemestarStart" class="form-control" required />
@@ -16,8 +18,13 @@
     </div>
 
     <div class="form-group">
-        <label for="ClassName">Class Name:</label>
-        <input type="text" id="ClassName" name="ClassName" class="form-control" required />
+        <label for="ClassName">Class:</label>
+        <select id="ClassName" name="ClassId" class="form-control" required>
+            @foreach (Class c in Model) 
+            {
+                <option value="@c.Code">@c.Name</option>
+            }
+        </select>
     </div>
 
     <button type="submit" class="btn btn-primary">Next</button>
