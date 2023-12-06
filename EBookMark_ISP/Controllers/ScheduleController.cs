@@ -26,13 +26,14 @@ namespace EBookMark_ISP.Controllers
             if (username != null)
             {
                 int? access = HttpContext.Session.GetInt32("Permissions");
-                if (access != null && access > 5)
+                if (access != null && access >= 5)
                 {
                     //Schedule fullSchedule = CreateFullSchedule(1);
                     //Schedule fullSchedule2 = CreateFullSchedule(2);
                     //List<Schedule> list = new List<Schedule> { fullSchedule, fullSchedule2 };
                     //var schedules = _context.Users.Where(u => u.Admin != null).ToList();
                     var schedules = _context.Schedules.Include(s => s.FkClassNavigation).ToList();
+                    ViewBag.Permissions = access;
                     return View("ScheduleList", schedules);
                 }
                 return RedirectToAction("WeeklySchedule");
@@ -44,9 +45,16 @@ namespace EBookMark_ISP.Controllers
         public IActionResult WeeklySchedule(int ?scheduleId, int selectedWeek = 1)
         {
 
-            if (scheduleId == null)
+            if (scheduleId == null || HttpContext.Session.GetInt32("Permissions") == 1)
             {
-                //retrieve scheduleId by student Id
+                string code = _context.Students.Include(s => s.FkUserNavigation).
+                    FirstOrDefault(s => s.FkUserNavigation.Username == HttpContext.Session.GetString("Username")).FkClass;
+                scheduleId = _context.Schedules.Where(s => s.FkClass == code && s.SemesterStart <= DateTime.Now && s.SemesterEnd >= DateTime.Now).FirstOrDefault().Id;
+
+                if (scheduleId == null)
+                {
+                    return RedirectToAction("Dashboard", "Home");
+                }
             }
             Schedule fullSchedule = _context.Schedules.SingleOrDefault(s => s.Id == scheduleId);
 
@@ -55,7 +63,7 @@ namespace EBookMark_ISP.Controllers
 
 
             var lessonsForSelectedWeek = _context.SubjectTimes.Where(l => l.FkSchedule == fullSchedule.Id && 
-            l.StartDate >= selectedWeekDates.Item1 && l.EndDate <= selectedWeekDates.Item2).Include(l => l.FkClassroomNavigation).Include(l => l.FkSubjectNavigation).ToList();
+            l.StartDate >= selectedWeekDates.Item1 && l.EndDate <= selectedWeekDates.Item2).Include(l => l.FkClassroomNavigation).Include(l => l.FkSubjectNavigation).Include(l => l.TypeNavigation).ToList();
             //var lessonsForSelectedWeek = fullSchedule.Lessons
             //    .Where(lesson => lesson.Start >= selectedWeekDates.Item1 && lesson.End <= selectedWeekDates.Item2)
             //    .ToList();
@@ -69,6 +77,32 @@ namespace EBookMark_ISP.Controllers
 
             // Assuming you have a view that takes a single Schedule object and displays it weekly
             return View("Schedule", lessonsForSelectedWeek);
+        }
+
+        private int CalculateTotalWeeks(DateTime startDate, DateTime endDate)
+        {
+            // Calculate the number of weeks between two dates
+            var totalDays = (endDate - startDate).Days;
+            var totalWeeks = totalDays / 7;
+            return totalWeeks + 1;
+        }
+
+        private Tuple<DateTime, DateTime> CalculateWeekDates(DateTime semesterStart, int weekNumber)
+        {
+            // Calculate the start and end dates for a specific week
+            var startDate = semesterStart.AddDays((weekNumber - 1) * 7);
+            var endDate = startDate.AddDays(6);
+            return new Tuple<DateTime, DateTime>(startDate, endDate);
+        }
+
+        private string GenerateWeekDropdown(int totalWeeks, int selectedWeek, DateTime semesterStart)
+        {
+            var dropdown = new StringBuilder();
+            for (var i = 1; i <= totalWeeks; i++)
+            {
+                dropdown.AppendLine($"<option value=\"{i}\"{(i == selectedWeek ? " selected" : "")}>Week {i} {CalculateWeekDates(semesterStart, i).Item1.ToString("yyyy-MM-dd")}</option>");
+            }
+            return dropdown.ToString();
         }
 
         public IActionResult CreateSchedule()
@@ -107,15 +141,25 @@ namespace EBookMark_ISP.Controllers
         {
             //validation
             //lesson length = 45min
+            //if (Amounts.Sum() > 30)
+            //{
+            //    //per daug pamoku
+            //}
             //var schedule = new Schedule
             //{
             //    SemesterStart = semesterStart,
             //    SemesterEnd = semesterEnd,
+            //    //className has code value
             //    FkClass = className.ToString()
             //};
-            //var classrooms = _context.Classrooms.ToList();
+            //int classSize = _context.Classes.Find(className).StudentsCount;
+            //var classrooms = _context.Classrooms.Where(c => c.Capacity >= classSize).ToList();
             //var subjetTimes = _context.SubjectTimes.Where(s => s.StartDate > semesterStart && s.StartDate < semesterEnd).ToList();
             //var TakenSlots = new List<SubjectTime>();
+            //for (DateTime i = semesterStart; i < semesterStart.AddDays(7); i = i.AddDays(1))
+            //{
+            //    for (DateTime j = i.AddHours(8); j < i.AddHours)
+            //}
             //for (int i = 0; i < Subjects.Count; i++)
             //{
             //    for (int j = 0; j < Amounts[i]; j++)
@@ -316,31 +360,7 @@ namespace EBookMark_ISP.Controllers
             return RedirectToAction("EditSchedule", new { scheduleId = scheduleId });
         }
 
-        private int CalculateTotalWeeks(DateTime startDate, DateTime endDate)
-        {
-            // Calculate the number of weeks between two dates
-            var totalDays = (endDate - startDate).Days;
-            var totalWeeks = totalDays / 7;
-            return totalWeeks + 1;
-        }
-
-        private Tuple<DateTime, DateTime> CalculateWeekDates(DateTime semesterStart, int weekNumber)
-        {
-            // Calculate the start and end dates for a specific week
-            var startDate = semesterStart.AddDays((weekNumber - 1) * 7);
-            var endDate = startDate.AddDays(6);
-            return new Tuple<DateTime, DateTime>(startDate, endDate);
-        }
-
-        private string GenerateWeekDropdown(int totalWeeks, int selectedWeek, DateTime semesterStart)
-        {
-            var dropdown = new StringBuilder();
-            for (var i = 1; i <= totalWeeks; i++)
-            {
-                dropdown.AppendLine($"<option value=\"{i}\"{(i == selectedWeek ? " selected" : "")}>Week {i} {CalculateWeekDates(semesterStart, i).Item1.ToString("yyyy-MM-dd")}</option>");
-            }
-            return dropdown.ToString();
-        }
+       
 
         public IActionResult DeleteSchedule(int scheduleId)
         {

@@ -214,7 +214,7 @@ public partial class EbookmarkContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("mark");
             entity.Property(e => e.RegistrationDate)
-                .HasColumnType("date")
+                .HasColumnType("datetime")
                 .HasColumnName("registration_date");
 
             entity.HasOne(d => d.FkStudentNavigation).WithOne(p => p.Mark)
@@ -387,13 +387,13 @@ public partial class EbookmarkContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("descrtiption");
             entity.Property(e => e.EndDate)
-                .HasColumnType("date")
+                .HasColumnType("datetime")
                 .HasColumnName("end_date");
             entity.Property(e => e.FkClassroom).HasColumnName("fk_Classroom");
             entity.Property(e => e.FkSchedule).HasColumnName("fk_Schedule");
             entity.Property(e => e.FkSubject).HasColumnName("fk_Subject");
             entity.Property(e => e.StartDate)
-                .HasColumnType("date")
+                .HasColumnType("datetime")
                 .HasColumnName("start_date");
             entity.Property(e => e.Type).HasColumnName("type");
 
