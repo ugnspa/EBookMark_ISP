@@ -5,7 +5,7 @@
 }
 
 <h2>Edit Lesson Time</h2>
-
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 <form asp-controller="Schedule" asp-action="UpdateLessonTime" method="post">
     @Html.HiddenFor(m => m.Id) <!-- Preserve the ID -->
     <input type="hidden" name="scheduleId" value="@ViewBag.Schdeule" />
@@ -76,8 +76,8 @@
     </div>
     <div>
         <input type="hidden" name="AddWeekly" value="false" />
-        <input type="checkbox" id="AddWeekly" name="AddWeekly" value="true" />
-        <label for="AddWeekly">Update for all weeks of semester</label>
+        @*<input type="checkbox" id="AddWeekly" name="AddWeekly" value="true" />
+        <label for="AddWeekly">Update for all weeks of semester</label>*@
     </div>
     <button type="submit">Update Lesson Time</button>
 </form>

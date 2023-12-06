@@ -5,7 +5,7 @@
 }
 
 <h2>Add Lesson Time</h2>
-
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 <form asp-controller="Schedule" asp-action="CreateLessonTime" method="post">
     <input type="hidden" name="scheduleId" value="@Model" />
     <!-- Start Time -->
@@ -60,8 +60,8 @@
     </div>
     <div>
         <input type="hidden" name="AddWeekly" value="false" />
-        <input type="checkbox" id="AddWeekly" name="AddWeekly" value="true" />
-        <label for="AddWeekly">Add for all weeks of semester</label>
+        @*<input type="checkbox" id="AddWeekly" name="AddWeekly" value="true" />
+        <label for="AddWeekly">Add for all weeks of semester</label>*@
     </div>
     
 

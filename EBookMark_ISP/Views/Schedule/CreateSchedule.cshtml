@@ -4,12 +4,8 @@
 @model List<Class>
 <h1>Create Schedule</h1>
 
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 <form asp-controller="Schedule" asp-action="AddSchedule" method="post">
-
-    @if (ViewBag.Errors != null)
-    {
-        <p>@ViewBag.Errors</p>
-    }
 
     <div class="form-group">
         <label for="SemestarStart">Start of Semester:</label>

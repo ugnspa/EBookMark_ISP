@@ -11,65 +11,7 @@ namespace EBookMark_ISP.Controllers
 {
     public class ScheduleController : Controller
     {
-        //public IActionResult Index(int selectedWeek = 1)
-        //{
-        //    Classroom classroom = new Classroom(101, "Lecture Hall", 10, 50, "Science Building");
-
-        //    LessonTime lessonTime = new LessonTime(
-        //        start: new DateTime(2023, 11, 7, 9, 0, 0), // November 7, 2023, at 11:00 AM
-        //        end: new DateTime(2023, 11, 7, 9, 45, 0),   // Assuming the lesson is 1 hour long, so it ends at 12:00 PM
-        //        desc: "Introduction to Programming",
-        //        type: "Lecture",
-        //        room: classroom,
-        //        subject: "Programing"
-        //    );
-        //    Schedule fullSchedule = new Schedule(
-        //    semestarStart: new DateTime(2023, 9, 1),    // Example semester start date
-        //    semestarEnd: new DateTime(2023, 12, 31),      // Example semester end date
-        //    className: "Computer Science"
-        //    );
-
-        //    fullSchedule.Add(lessonTime);
-
-
-
-
-
-
-        //    string username = HttpContext.Session.GetString("Username");
-        //    if (username != null)
-        //    {
-        //        int? access = HttpContext.Session.GetInt32("Permissions");
-        //        if (access != null)
-        //        {
-        //            if (access > 1)
-        //            {
-        //                List<Schedule> list= new List<Schedule>();
-        //                list.Add(fullSchedule);
-        //                return View("ScheduleList", list);
-        //            }
-        //        }
-
-
-        //        var totalWeeks = CalculateTotalWeeks(fullSchedule.SemestarStart, fullSchedule.SemestarEnd);
-
-        //        // Calculate the start and end dates for the selected week
-        //        var selectedWeekDates = CalculateWeekDates(fullSchedule.SemestarStart, selectedWeek);
-
-        //        // Filter the lessons for the selected week
-        //        var lessonsForSelectedWeek = fullSchedule.Lessons
-        //            .Where(lesson => lesson.Start >= selectedWeekDates.Item1 && lesson.End <= selectedWeekDates.Item2)
-        //            .ToList();
-        //        var weekDates = CalculateWeekDates(fullSchedule.SemestarStart, selectedWeek);
-        //        ViewBag.WeekStartDate = weekDates.Item1;
-        //        ViewBag.WeekEndDate = weekDates.Item2;
-        //        ViewBag.TotalWeeks = totalWeeks;
-        //        ViewBag.SelectedWeek = selectedWeek;
-        //        ViewBag.WeekDropdown = GenerateWeekDropdown(totalWeeks, selectedWeek);
-        //        return View("Schedule", lessonsForSelectedWeek);
-        //    }
-        //    return View("~/Views/Home/Index.cshtml");
-        //}
+        
         private readonly EbookmarkContext _context;
 
         public ScheduleController(EbookmarkContext context)
@@ -98,43 +40,6 @@ namespace EBookMark_ISP.Controllers
 
             return RedirectToAction("Index", "Home");
         }
-
-        //private Schedule CreateFullSchedule(int id)
-        //{
-        //    //Classroom classroom = new Classroom(1, 101, "Lecture Hall", 10, 50, "Science Building");
-        //    LessonTime lessonTime = new LessonTime(
-        //        id = 1,
-        //        start: new DateTime(2023, 11, 7, 9, 0, 0), // November 7, 2023, at 9:00 AM
-        //        end: new DateTime(2023, 11, 7, 9, 45, 0),   // Ends at 9:45 AM
-        //        desc: "Introduction to Programming",
-        //        type: "Lecture",
-        //        room: classroom,
-        //        subject: "Programming"
-        //    );
-        //    Schedule fullSchedule = new Schedule(
-        //        id: id,
-        //        semestarStart: new DateTime(2023, 9, 1),
-        //        semestarEnd: new DateTime(2023, 12, 31),
-        //        className: "Computer Science"
-        //    );
-
-        //    fullSchedule.Add(lessonTime);
-
-        //    return fullSchedule;
-        //}
-
-        //public Schedule GetScheduleById(int id)
-        //{
-        //    Schedule fullSchedule = CreateFullSchedule(1);
-        //    Schedule fullSchedule2 = CreateFullSchedule(2);
-        //    List<Schedule> list = new List<Schedule> { fullSchedule, fullSchedule2 };
-        //    foreach (Schedule s in list)
-        //    {
-        //        if (id == s.ScheduleId) return s;
-        //    }
-        //    return CreateFullSchedule(1);
-
-        //}
 
         public IActionResult WeeklySchedule(int ?scheduleId, int selectedWeek = 1)
         {
@@ -180,10 +85,15 @@ namespace EBookMark_ISP.Controllers
                 SemesterEnd = SemestarEnd,
                 FkClass = ClassId.ToString()
             };
-            if (!ValidateSchedule(schedule))
+            if (!ValidateSchedule(schedule)) // Assuming ValidateSchedule is your custom validation method
             {
-                ViewBag.Errors = "Nurodytame semestro laikotarpyje jau egzistuoja tvarkaraštis šiai klasei";
+                // Add a model error
+                ModelState.AddModelError("", "Nurodytame semestro laikotarpyje jau egzistuoja tvarkaraštis šiai klasei");
+
+                // Prepare any additional data needed for the view
                 var classes = _context.Classes.ToList();
+
+                // Return the same view with the model and errors
                 return View("CreateSchedule", classes);
             }
             _context.Schedules.Add(schedule);
@@ -192,8 +102,27 @@ namespace EBookMark_ISP.Controllers
             return RedirectToAction("EditSchedule", new { scheduleId = schedule.Id });
         }
 
-        public IActionResult GenerateAndAddSchedule()
+        [HttpPost]
+        public IActionResult GenerateAndAddSchedule(DateTime semesterStart, DateTime semesterEnd, string className, List<string> Subjects, List<int> Amounts)
         {
+            //validation
+            //lesson length = 45min
+            //var schedule = new Schedule
+            //{
+            //    SemesterStart = semesterStart,
+            //    SemesterEnd = semesterEnd,
+            //    FkClass = className.ToString()
+            //};
+            //var classrooms = _context.Classrooms.ToList();
+            //var subjetTimes = _context.SubjectTimes.Where(s => s.StartDate > semesterStart && s.StartDate < semesterEnd).ToList();
+            //var TakenSlots = new List<SubjectTime>();
+            //for (int i = 0; i < Subjects.Count; i++)
+            //{
+            //    for (int j = 0; j < Amounts[i]; j++)
+            //    {
+            //        //for (DateTime t = )
+            //    }
+            //}
             return RedirectToAction("EditSchedule", new { scheduleId = 1 });
         }
 
@@ -225,9 +154,30 @@ namespace EBookMark_ISP.Controllers
             model.SemesterStart = SemestarStart;
             model.SemesterEnd = SemestarEnd;
             model.FkClass = ClassId;
+            if (!ValidateSchedule(model)) // Assuming ValidateSchedule is your custom validation method
+            {
+                // Add a model error
+                ModelState.AddModelError("", "Nurodytame semestro laikotarpyje jau egzistuoja tvarkaraštis šiai klasei");
+
+                // Prepare any additional data needed for the view
+                ViewBag.Classes = _context.Classes.ToList();
+                Schedule fullSchedule = _context.Schedules
+                .Include(s => s.FkClassNavigation)
+                .Include(s => s.SubjectTimes)
+                .ThenInclude(st => st.FkSubjectNavigation)
+                .SingleOrDefault(s => s.Id == model.Id);
+
+                // Return the same view with the model and errors
+                return View("EditSchedule", fullSchedule);
+            }
             _context.Entry(model).State = EntityState.Modified;
             _context.SaveChanges();
-            return RedirectToAction("index");
+            //Schedule fullSchedule = _context.Schedules
+            //   .Include(s => s.FkClassNavigation)
+            //   .Include(s => s.SubjectTimes)
+            //   .ThenInclude(st => st.FkSubjectNavigation)
+            //   .SingleOrDefault(s => s.Id == model.Id);
+            return RedirectToAction("EditSchedule", new { scheduleId = model.Id });
         }
 
         public IActionResult EditLessonTime(int scheduleId, int LessonTimeid)
@@ -284,6 +234,18 @@ namespace EBookMark_ISP.Controllers
             }
             else
             {
+                if (!CheckIfClassRoomIsAvailable(model) || !CheckIfTimeSlotAvailable(model))
+                {
+                    var subjectTime = _context.SubjectTimes.Find(model.Id);
+                    var Classroom = _context.Classrooms.ToList();
+                    var subjects = _context.Subjects.ToList();
+                    var types = _context.SubjectTypes.ToList();
+                    ViewBag.Classrooms = Classroom;
+                    ViewBag.Subjects = subjects;
+                    ViewBag.Types = types;
+                    ViewBag.Schdeule = scheduleId;
+                    return View("EditLessonTime", subjectTime);
+                }
                 _context.Entry(model).State = EntityState.Modified;
                 _context.SaveChanges();
             }
@@ -327,12 +289,24 @@ namespace EBookMark_ISP.Controllers
             {
                 subjectTime.FkClassroom = null;
             }
+            
             if (addWeeklyBool)
             {
                 AddForAllSemestarWeeks(subjectTime);
             }
             else
             {
+                if (!CheckIfClassRoomIsAvailable(subjectTime) || !CheckIfTimeSlotAvailable(subjectTime))
+                {
+
+                    var Classroom = _context.Classrooms.ToList();
+                    var subjects = _context.Subjects.ToList();
+                    var types = _context.SubjectTypes.ToList();
+                    ViewBag.Classrooms = Classroom;
+                    ViewBag.Subjects = subjects;
+                    ViewBag.Types = types;
+                    return View("AddLessonTime", scheduleId);
+                }
                 _context.SubjectTimes.Add(subjectTime);
                 _context.SaveChanges();
             }
@@ -370,6 +344,11 @@ namespace EBookMark_ISP.Controllers
             var schedule = _context.Schedules.Find(scheduleId);
             if (schedule != null)
             {
+                var subjectTimes = _context.SubjectTimes.Where(s => s.FkSchedule == scheduleId).ToList();
+                if (subjectTimes.Any())
+                {
+                    _context.SubjectTimes.RemoveRange(subjectTimes);
+                }
                 _context.Schedules.Remove(schedule);
             }
             _context.SaveChanges();
@@ -446,7 +425,7 @@ namespace EBookMark_ISP.Controllers
         public bool ValidateSchedule(Schedule schedule)
         {
             var schedules = _context.Schedules.Where(s => s.FkClass == schedule.FkClass &&
-            (s.SemesterEnd > schedule.SemesterStart && schedule.SemesterEnd > s.SemesterStart)).ToList();
+            (s.SemesterEnd > schedule.SemesterStart && schedule.SemesterEnd > s.SemesterStart ) && schedule.Id != s.Id).ToList();
             if (schedules.Count == 0)
             {
                 return true;
@@ -455,6 +434,29 @@ namespace EBookMark_ISP.Controllers
             {
                 return false;
             }
+        }
+
+        public bool CheckIfClassRoomIsAvailable(SubjectTime subjecTime)
+        {
+            var subjectsTimes = _context.SubjectTimes.Where(s => !(s.StartDate > subjecTime.EndDate || s.EndDate < subjecTime.StartDate)
+            && s.FkClassroom == subjecTime.FkClassroom && s.Id != subjecTime.Id).ToList();
+            if (subjectsTimes.Any())
+            {
+                ModelState.AddModelError("", subjecTime.StartDate + " - " + subjecTime.EndDate + " Šiame laikotarpyje kabinetas yra užimtas");
+                return false;
+            }
+            return true;
+        }
+
+        public bool CheckIfTimeSlotAvailable(SubjectTime subjecTime)
+        {
+            var subjectsTimes = _context.SubjectTimes.Where(s => !(s.StartDate > subjecTime.EndDate || s.EndDate < subjecTime.StartDate) && s.FkSchedule == subjecTime.FkSchedule && s.Id != subjecTime.Id ).ToList();
+            if (subjectsTimes.Any())
+            {
+                ModelState.AddModelError("", subjecTime.StartDate + " - " + subjecTime.EndDate + " Šiame laikotarpyje šiai klasei jau vyksta pamoka");
+                return false;
+            }
+            return true;
         }
 
 
