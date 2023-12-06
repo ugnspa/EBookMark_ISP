@@ -200,9 +200,9 @@ public partial class EbookmarkContext : DbContext
 
             entity.ToTable("marks");
 
-            entity.HasIndex(e => e.FkStudent, "fk_Student").IsUnique();
+            entity.HasIndex(e => e.FkStudent, "fk_Student");
 
-            entity.HasIndex(e => e.FkSubjectTime, "fk_Subject_time").IsUnique();
+            entity.HasIndex(e => e.FkSubjectTime, "fk_Subject_time");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Comment)
@@ -217,13 +217,13 @@ public partial class EbookmarkContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("registration_date");
 
-            entity.HasOne(d => d.FkStudentNavigation).WithOne(p => p.Mark)
-                .HasForeignKey<Mark>(d => d.FkStudent)
+            entity.HasOne(d => d.FkStudentNavigation).WithMany(p => p.Marks)
+                .HasForeignKey(d => d.FkStudent)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("gauna");
 
-            entity.HasOne(d => d.FkSubjectTimeNavigation).WithOne(p => p.Mark)
-                .HasForeignKey<Mark>(d => d.FkSubjectTime)
+            entity.HasOne(d => d.FkSubjectTimeNavigation).WithMany(p => p.Marks)
+                .HasForeignKey(d => d.FkSubjectTime)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("įvertinama");
         });

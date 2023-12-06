@@ -164,7 +164,7 @@ namespace EBookMark_ISP.Controllers
             try
             {
                 User user = _context.Users.FirstOrDefault(u => u.Username == username);
-                user.Password = Models.User.ComputeSha256Hash(newPassword);
+                user.Password = Hash.ComputeSha256Hash(newPassword);
                 _context.SaveChanges();
                 HttpContext.Session.SetString("Message", "Password updated successfully");
             }
@@ -514,7 +514,7 @@ namespace EBookMark_ISP.Controllers
             User user = new User
             {
                 Username = username,
-                Password = Models.User.ComputeSha256Hash(password),
+                Password = Hash.ComputeSha256Hash(password),
                 Email = email,
                 Role = role
             };
