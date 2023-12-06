@@ -142,6 +142,9 @@ namespace EBookMark_ISP.Controllers
                 .Include(s => s.SubjectTimes)
                 .ThenInclude(st => st.FkSubjectNavigation)
                 .SingleOrDefault(s => s.Id == scheduleId);
+            fullSchedule.SubjectTimes = fullSchedule.SubjectTimes
+                                    .OrderBy(st => st.StartDate)
+                                    .ToList();
             //Check for conflicts
             var classes = _context.Classes.ToList();
             ViewBag.Classes = classes;
@@ -438,6 +441,8 @@ namespace EBookMark_ISP.Controllers
 
         public bool CheckIfClassRoomIsAvailable(SubjectTime subjecTime)
         {
+            if (subjecTime.FkClassroom == null)
+                return true;
             var subjectsTimes = _context.SubjectTimes.Where(s => !(s.StartDate > subjecTime.EndDate || s.EndDate < subjecTime.StartDate)
             && s.FkClassroom == subjecTime.FkClassroom && s.Id != subjecTime.Id).ToList();
             if (subjectsTimes.Any())
