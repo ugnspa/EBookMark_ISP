@@ -13,7 +13,7 @@
                 <div class="col-md-4 mb-3">
                     <div class="card student-tile">
                         <div class="card-body">
-                            <a href="@Url.Action("Student", "Teacher", new { id = student.FkUser })" class="stretched-link">
+                            <a href="@Url.Action("Student", "Teacher", new { student_id = student.FkUser })" class="stretched-link">
                                 <h5 class="card-title">@student.Name @student.Surname</h5>
                             </a>
                         </div>

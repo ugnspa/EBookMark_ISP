@@ -1,5 +1,6 @@
 ﻿using EBookMark_ISP.Models;
 using EBookMark_ISP.Services;
+using EBookMark_ISP.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -50,36 +51,94 @@ namespace EBookMark_ISP.Controllers
             }
             return true;
         }
-        public IActionResult GradeBook(string name)
+        public IActionResult GradeBook()
         {
             if (!AccessWatcher())
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-            Console.WriteLine(name);
-            Dictionary<string, string[]> dict = new();
-            string[] marksAnglu = new string[10];
-            string[] marksMatke = new string[10];
-            string[] marksLietuviu = new string[10];
-            marksAnglu[5] = "10";
-            marksLietuviu[2] = "8";
-            marksMatke[3] = "9";
-            marksAnglu[9] = "7";
-            dict["Lietuviu"] = marksLietuviu;
-            dict["Matke"] = marksMatke;
-            dict["Anglu"] = marksAnglu;
+            string username = HttpContext.Session.GetString("Username");
+            var user_id = _context.Users.FirstOrDefault(us => us.Username == username).Id;
+            Student student = _context.Students.FirstOrDefault(st => st.FkUser == user_id);
+            List<Mark> marks = _context.Marks.ToList();
+            foreach (var item in marks)
+            {
+                Console.WriteLine(item.Id);
+            }
+
+            //List<Mark> marks = _context.Marks.Where(ma => ma.FkStudent == user_id).ToList();
+            
+            /*
+            var schedulesWithMarks = new Dictionary<Schedule, List<GradeBookViewModel.SubjectMarks>>();
+
+            var marksGroupedBySubjectTime = marks.GroupBy(m => m.FkSubjectTime);
+
+            foreach (var group in marksGroupedBySubjectTime)
+            {
+                var subjectTimeId = group.Key;
+                var subjectTime = _context.SubjectTimes
+                           .Include(st => st.FkSubjectNavigation)
+                           .FirstOrDefault(st => st.Id == subjectTimeId);
+
+                if (subjectTime != null)
+                {
+                    var schedule = _context.Schedules.FirstOrDefault(s => s.Id == subjectTime.FkSchedule);
+                    if (schedule != null)
+                    {
+                        if (!schedulesWithMarks.TryGetValue(schedule, out var subjectMarksList))
+                        {
+                            subjectMarksList = new List<GradeBookViewModel.SubjectMarks>();
+                            schedulesWithMarks[schedule] = subjectMarksList;
+                        }
+                        Subject subject = _context.Subjects.FirstOrDefault(sub => sub.Code.Equals(subjectTime.FkSubject));
+                        var subjectMarks = new GradeBookViewModel.SubjectMarks
+                        {
+                            subject = $"{subject.Code + subject.Name}",
+                            marksTimes = group.Select(m => new GradeBookViewModel.MarkTime
+                            {
+                                time = subjectTime.StartDate, 
+                                mark = m
+                            }).ToList()
+                        };
+
+                        subjectMarksList.Add(subjectMarks);
+                    }
+                }
+            }
+            var viewModel = new GradeBookViewModel
+            {
+                student = student,
+                schedules = schedulesWithMarks
+            };
+
+
+            var gradeBookString = new StringBuilder();
+            gradeBookString.AppendLine($"Grade Book for Student: {viewModel.student.Name}");
+
+            foreach (var scheduleWithMarks in viewModel.schedules)
+            {
+                var schedule = scheduleWithMarks.Key;
+                gradeBookString.AppendLine($"Schedule: {schedule.SemesterStart.ToString("d")} - {schedule.SemesterEnd.ToString("d")}");
+
+                foreach (var subjectMarks in scheduleWithMarks.Value)
+                {
+                    gradeBookString.AppendLine($"  Subject: {subjectMarks.subject}");
+
+                    foreach (var markTime in subjectMarks.marksTimes)
+                    {
+                        gradeBookString.AppendLine($"    Date: {markTime.time.ToString("g")}, Mark: {markTime.mark.Mark1}"); // Replace MarkValue with your actual Mark property
+                    }
+                }
+            }
+
+            // For debugging: Print to console or log
+            Console.WriteLine(gradeBookString.ToString());
+
             int? permissions = HttpContext.Session.GetInt32("Permissions");
-            if (name == null && permissions == 1)
-            {
-                string username = HttpContext.Session.GetString("Username");
-                ViewBag.StudentName = username;
-            }
-            else
-            {
-                ViewBag.StudentName = name;
-            }
             ViewBag.Permissions = permissions;
-            return View(dict);
+            */
+
+            return View();
         }
 
         public IActionResult ChangePassword()
