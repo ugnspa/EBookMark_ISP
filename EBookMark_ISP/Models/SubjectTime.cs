@@ -27,7 +27,7 @@ public partial class SubjectTime
 
     public virtual Subject FkSubjectNavigation { get; set; } = null!;
 
-    public virtual Mark? Mark { get; set; }
+    public virtual ICollection<Mark> Marks { get; set; } = new List<Mark>();
 
     public virtual SubjectType TypeNavigation { get; set; } = null!;
 }
