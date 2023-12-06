@@ -1,11 +1,14 @@
-﻿@*@model List<Schedule> // Assuming your model is a list of Schedule objects
+﻿@model List<Schedule> // Assuming your model is a list of Schedule objects
 
 <h2>Schedule List</h2>
+@if (ViewBag.Permissions == 10)
+{
+    <div>
+        <a asp-controller="Schedule" asp-action="CreateSchedule" class="btn btn-primary">Create Schedule</a>
+        <a asp-controller="Schedule" asp-action="GenerateSchedule" class="btn btn-primary">Generate Schedule</a>
+    </div>
+}
 
-<div>
-    <a asp-controller="Schedule" asp-action="CreateSchedule" class="btn btn-primary">Create Schedule</a>
-    <a asp-controller="Schedule" asp-action="GenerateSchedule" class="btn btn-primary">Generate Schedule</a>
-</div>
 
 <table>
     <tr>
@@ -16,29 +19,36 @@
     @foreach (var schedule in Model)
     {
             <tr>
-                <td>@schedule.className</td>
-                <td>@schedule.SemestarStart.ToShortDateString()</td>
-                <td>@schedule.SemestarEnd.ToShortDateString()</td>
+                <td>@schedule.FkClassNavigation.Name</td>
+                <td>@schedule.SemesterStart.ToShortDateString()</td>
+                <td>@schedule.SemesterEnd.ToShortDateString()</td>
                 <td>
                     <form asp-controller="Schedule" asp-action="WeeklySchedule" method="get">
-                        <input type="hidden" name="scheduleId" value="@schedule.ScheduleId" />
+                        <input type="hidden" name="scheduleId" value="@schedule.Id" />
                         <input type="submit" value="View" />
                     </form>
                 </td>
-                <td>
-                    <form asp-controller="Schedule" asp-action="DeleteSchedule" method="get">
-                        <input type="hidden" name="scheduleId" value="@schedule.ScheduleId" />
-                        <input type="submit" value="Delete" />
-                    </form>
-                </td>
-                <td>
-                    <form asp-controller="Schedule" asp-action="EditSchedule" method="get">
-                        <input type="hidden" name="scheduleId" value="@schedule.ScheduleId" />
-                        <input type="submit" value="Edit" />
-                    </form>
-                </td>
+                @if (ViewBag.Permissions == 10){
+                    <td>
+                        <form asp-controller="Schedule" asp-action="DeleteSchedule" method="post" onsubmit="return confirmDelete('@schedule.FkClassNavigation.Name', '@schedule.SemesterStart.ToShortDateString()', '@schedule.SemesterEnd.ToShortDateString()')">
+                            <input type="hidden" name="scheduleId" value="@schedule.Id" />
+                            <input type="submit" value="Delete" />
+                        </form>
+                    </td>
+                    <td>
+                        <form asp-controller="Schedule" asp-action="EditSchedule" method="get">
+                            <input type="hidden" name="scheduleId" value="@schedule.Id" />
+                            <input type="submit" value="Edit" />
+                        </form>
+                    </td>
+        
+                }
             </tr>
     }
 </table>
+<script>
+    function confirmDelete(className, semesterStart, semesterEnd) {
+        return confirm("Are you sure you want to delete the schedule for " + className + " from " + semesterStart + " to " + semesterEnd + "?");
+    }
+</script>
 
-*@

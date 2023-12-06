@@ -1,21 +1,29 @@
-﻿@model List<string>
-
+﻿@model List<EBookMark_ISP.ViewModels.ClassStudentsViewModel>
+<head>
+    <link rel="stylesheet" href="~/css/student_tile.css" asp-append-version="true" />
+</head>
 <div class="container text-center pb-5 mt-5">
-    <h1>Students</h1>
-    <div class="row">
-        @foreach (string str in Model)
-        {
-            <div class="col-md-4 mb-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">@str</h5>
-                        <a class="btn btn-primary" asp-controller="Teacher" asp-action="Student" asp-route-name="@str">View Profile</a>
+    <h1>Classes and Students</h1>
+    @foreach (var classStudents in Model)
+    {
+        <h2 class="class-name">@classStudents.classObject.Code - @classStudents.classObject.Name</h2>
+        <div class="row">
+            @foreach (var student in classStudents.students)
+            {
+                <div class="col-md-4 mb-3">
+                    <div class="card student-tile">
+                        <div class="card-body">
+                            <a href="@Url.Action("Student", "Teacher", new { student_id = student.FkUser })" class="stretched-link">
+                                <h5 class="card-title">@student.Name @student.Surname</h5>
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    }
 </div>
+
 
 
 

@@ -1,7 +1,10 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
-
+<head>
+    <link rel="stylesheet" href="~/css/alert_style.css" asp-append-version="true" />
+</head>
+@Html.Partial("_Alert")
 <div class="container">
     <div class="row">
         <div class="col-md-6 offset-md-3">
@@ -39,3 +42,4 @@
         @Html.Partial("_Admin")
     }
 }
+

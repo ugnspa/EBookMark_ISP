@@ -12,7 +12,7 @@ builder.Services.AddSession();
 
 builder.Services.AddDbContext<EbookmarkContext>(options =>
 {
-    options.UseMySQL("Server=localhost;Database=ebookmark;User Id=root;Password=root;"); // Replace with your actual database connection string
+    options.UseMySQL("Server=localhost;Database=ebookmark;User Id=root;Password=;"); // Replace with your actual database connection string
 });
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("AWS"));

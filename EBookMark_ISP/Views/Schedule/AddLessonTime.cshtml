@@ -1,13 +1,13 @@
-﻿@*@model LessonTime
+﻿@model int
 
 @{
     ViewData["Title"] = "Add Lesson Time";
 }
 
 <h2>Add Lesson Time</h2>
-
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 <form asp-controller="Schedule" asp-action="CreateLessonTime" method="post">
-
+    <input type="hidden" name="scheduleId" value="@Model" />
     <!-- Start Time -->
     <div>
         <label for="start">Start Time:</label>
@@ -27,28 +27,86 @@
     </div>
 
     <!-- Type -->
-    <div>
-        <label for="type">Type:</label>
-        <input type="text" id="type" name="Type" required />
+    <div class="form-group">
+        <label for="Type">Type:</label>
+        <select id="TypeDropdown" name="SubjectTypeId" class="form-control" onchange="updateClassroomDropdown()" required>
+            @foreach (SubjectType s in ViewBag.Types)
+            {
+                <option value="@s.Id"> @s.Name </option>
+            }
+        </select>
     </div>
 
     <!-- Subject -->
-    <div>
-        <label for="subject">Subject:</label>
-        <input type="text" id="subject" name="Subject" required />
+    <div class="form-group">
+        <label for="Subject">Subject:</label>
+        <select id="SubjectName" name="SubjectId" class="form-control" required>
+            @foreach (Subject s in ViewBag.Subjects)
+            {
+                <option value="@s.Code"> @s.Name </option>
+            }
+        </select>
     </div>
 
     <!-- Classroom Dropdown -->
-    <div>
-        <label for="classroomId">Classroom:</label>
-        @Html.DropDownListFor(
-        model => model.room.number,
-        ViewBag.ClassroomSelectList as SelectList,
-        htmlAttributes: new { @class = "form-control" }
-        )
-)
+    <div class="form-group">
+        <label id="classroomLabel" for="ClassRoom">Classroom:</label>
+        <select id="ClassRoomDropdown" name="ClassroomId" class="form-control">
+            @foreach (Classroom c in ViewBag.Classrooms)
+            {
+                <option value="@c.Id">@c.Code, Floor: @c.Floor, Building: @c.Building, UseCase: @c.UseCase, Capacity: @c.Capacity</option>
+            }
+        </select>
     </div>
+    <div>
+        <input type="hidden" name="AddWeekly" value="false" />
+        <input type="checkbox" id="AddWeekly" name="AddWeekly" value="true" />
+        <label for="AddWeekly">Add for upcoming weeks of semester</label>
+    </div>
+    
 
     <!-- Submit Button -->
     <button type="submit">Add Lesson Time</button>
-</form>*@
+</form>
+<script>
+    function updateClassroomDropdown() {
+        var selectedType = document.getElementById('TypeDropdown').value;
+        var classroomDropdown = document.getElementById('ClassRoomDropdown');
+
+        if (selectedType == '2') {
+            classroomLabel.style.display = 'none';
+            classroomDropdown.style.display = 'none';
+            classroomDropdown.value = '';
+        } else {
+            classroomDropdown.style.display = 'block';
+            classroomLabel.style.display = 'block';
+            classroomDropdown.value = initialClassroomId; // Reset to initial value
+        }
+    }
+</script>
+
+
+<script>
+    var initialClassroomId;
+
+    window.onload = function () {
+        var classroomDropdown = document.getElementById('ClassRoomDropdown');
+        initialClassroomId = classroomDropdown.value; // Store the initial value
+        updateClassroomDropdown(); // Set initial state of the dropdowns
+    };
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var checkbox = document.getElementById('AddWeekly');
+        var hiddenInput = document.getElementsByName('AddWeekly')[0];
+
+        checkbox.addEventListener('change', function () {
+            if (checkbox.checked) {
+                hiddenInput.disabled = true;
+            } else {
+                hiddenInput.disabled = false;
+            }
+        });
+    });
+</script>
