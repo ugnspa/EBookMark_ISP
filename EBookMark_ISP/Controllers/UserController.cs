@@ -9,6 +9,7 @@ using Org.BouncyCastle.Bcpg;
 using Org.BouncyCastle.Tls;
 using System.Text;
 using System.Xml.Linq;
+using ZstdSharp.Unsafe;
 using static Azure.Core.HttpHeader;
 
 namespace EBookMark_ISP.Controllers
@@ -51,65 +52,55 @@ namespace EBookMark_ISP.Controllers
             }
             return true;
         }
-        public IActionResult GradeBook()
+        public IActionResult GradeBook(int? student_id)
         {
             if (!AccessWatcher())
             {
                 return RedirectToAction("Dashboard", "Home");
             }
             string username = HttpContext.Session.GetString("Username");
-            var user_id = _context.Users.FirstOrDefault(us => us.Username == username).Id;
+            var user_id = student_id!=null?student_id: _context.Users.FirstOrDefault(us => us.Username == username).Id;
             Student student = _context.Students.FirstOrDefault(st => st.FkUser == user_id);
-            List<Mark> marks = _context.Marks.ToList();
-            foreach (var item in marks)
-            {
-                Console.WriteLine(item.Id);
-            }
 
-            //List<Mark> marks = _context.Marks.Where(ma => ma.FkStudent == user_id).ToList();
-            
-            /*
-            var schedulesWithMarks = new Dictionary<Schedule, List<GradeBookViewModel.SubjectMarks>>();
+            var student_schedules = _context.Schedules.Where(sh => sh.FkClass == student.FkClass).ToList();
 
-            var marksGroupedBySubjectTime = marks.GroupBy(m => m.FkSubjectTime);
-
-            foreach (var group in marksGroupedBySubjectTime)
-            {
-                var subjectTimeId = group.Key;
-                var subjectTime = _context.SubjectTimes
-                           .Include(st => st.FkSubjectNavigation)
-                           .FirstOrDefault(st => st.Id == subjectTimeId);
-
-                if (subjectTime != null)
-                {
-                    var schedule = _context.Schedules.FirstOrDefault(s => s.Id == subjectTime.FkSchedule);
-                    if (schedule != null)
-                    {
-                        if (!schedulesWithMarks.TryGetValue(schedule, out var subjectMarksList))
-                        {
-                            subjectMarksList = new List<GradeBookViewModel.SubjectMarks>();
-                            schedulesWithMarks[schedule] = subjectMarksList;
-                        }
-                        Subject subject = _context.Subjects.FirstOrDefault(sub => sub.Code.Equals(subjectTime.FkSubject));
-                        var subjectMarks = new GradeBookViewModel.SubjectMarks
-                        {
-                            subject = $"{subject.Code + subject.Name}",
-                            marksTimes = group.Select(m => new GradeBookViewModel.MarkTime
-                            {
-                                time = subjectTime.StartDate, 
-                                mark = m
-                            }).ToList()
-                        };
-
-                        subjectMarksList.Add(subjectMarks);
-                    }
-                }
-            }
-            var viewModel = new GradeBookViewModel
+            var viewModel = new EBookMark_ISP.ViewModels.GradeBookViewModel
             {
                 student = student,
-                schedules = schedulesWithMarks
+                schedules = new Dictionary<Schedule, List<GradeBookViewModel.SubjectMarks>>()
             };
+
+            foreach (var schedule in student_schedules)
+            {
+                List<GradeBookViewModel.SubjectMarks> list = new List<GradeBookViewModel.SubjectMarks>();
+
+                var student_subjects_curr = _context.SubjectTimes.Where(st => st.FkSchedule == schedule.Id).Select(su => su.FkSubject).Distinct().ToList();
+                foreach(var subject in student_subjects_curr)
+                {
+                    GradeBookViewModel.SubjectMarks subject_marks= new GradeBookViewModel.SubjectMarks();
+                    subject_marks.subject = subject;
+                    var all_marks = _context.Marks.Where(ma => ma.FkStudent == student.FkUser).ToList();
+                    List<GradeBookViewModel.MarkTime> marks = new List<GradeBookViewModel.MarkTime>();
+                    foreach(var mark in all_marks)
+                    {
+                        var subjectTime = _context.SubjectTimes.Where(st => st.Id == mark.FkSubjectTime && schedule.Id == st.FkSchedule && subject == st.FkSubject).FirstOrDefault();
+
+                        if (subjectTime != null)
+                        {
+                            GradeBookViewModel.MarkTime mark_time = new GradeBookViewModel.MarkTime
+                            {
+                                time = subjectTime.StartDate,
+                                mark = mark
+                            };
+                            marks.Add(mark_time);
+                        }
+                    }
+                    subject_marks.marksTimes = marks;
+                    list.Add(subject_marks);
+                }
+                viewModel.schedules[schedule] = list;
+            }
+
 
 
             var gradeBookString = new StringBuilder();
@@ -126,19 +117,18 @@ namespace EBookMark_ISP.Controllers
 
                     foreach (var markTime in subjectMarks.marksTimes)
                     {
-                        gradeBookString.AppendLine($"    Date: {markTime.time.ToString("g")}, Mark: {markTime.mark.Mark1}"); // Replace MarkValue with your actual Mark property
+                        gradeBookString.AppendLine($"    Date: {markTime.time.ToString("g")}, Mark: {markTime.mark.Mark1}"); 
                     }
                 }
             }
 
-            // For debugging: Print to console or log
             Console.WriteLine(gradeBookString.ToString());
 
             int? permissions = HttpContext.Session.GetInt32("Permissions");
             ViewBag.Permissions = permissions;
-            */
+            
 
-            return View();
+            return View(viewModel);
         }
 
         public IActionResult ChangePassword()

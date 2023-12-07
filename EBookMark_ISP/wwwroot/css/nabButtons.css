@@ -1,0 +1,24 @@
+﻿.month-buttons {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.month-nav {
+    background-color: rgba(21,140,186,1);
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color:white;
+    transition: background-color 0.3s;
+}
+
+    .month-nav:hover {
+        background-color: #4B9CD3;
+    }
+
+    .month-nav:disabled {
+        background-color: #ccc;
+        color: #666;
+    }
