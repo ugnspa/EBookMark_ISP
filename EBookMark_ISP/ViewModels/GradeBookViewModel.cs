@@ -11,6 +11,20 @@ namespace EBookMark_ISP.ViewModels
         {
             public string subject { get; set; }
             public List<MarkTime> marksTimes { get; set; }
+
+            public double average()
+            {
+                var validMarks = marksTimes
+                            .Where(mt => int.TryParse(mt.mark.Mark1, out _))
+                            .Select(mt => int.Parse(mt.mark.Mark1));
+
+                if (!validMarks.Any())
+                {
+                    return 0;
+                }
+
+                return validMarks.Average();
+            }
         }
         public class MarkTime
         {

@@ -3,23 +3,50 @@
     ViewData["Title"] = "_Teacher";
 }
 
-<div class="container border text-center pb-5 mt-5">
+<head>
+    <link rel="stylesheet" href="~/css/tiles.css" asp-append-version="true" />
+</head>
+
+<div class="container  text-center pb-5 mt-5">
     <h1 class="my-4">Teacher</h1>
-    <div class="row">
+        <div class="row">
         <div class="col-md-4 mb-3">
-            <a class="btn btn-primary btn-lg" href="@Url.Action("AllStudents", "Teacher")">All Students</a>
+            <div class="card tiles">
+                <div class="card-body">
+                    <a href="@Url.Action("AllStudents", "Teacher")" class="stretched-link">
+                        <h5 class="card-title">All Students</h5>
+                    </a>
+                </div>
+            </div>
         </div>
         <div class="col-md-4 mb-3">
-
-            <a class="btn btn-primary btn-lg" href="@Url.Action("index", "Schedule")">Schedule</a>
+            <div class="card tiles">
+                <div class="card-body">
+                    <a href="@Url.Action("index", "Schedule")" class="stretched-link">
+                        <h5 class="card-title">Schedule</h5>
+                    </a>
+                </div>
+            </div>
         </div>
         <div class="col-md-4 mb-3">
-            <a class="btn btn-primary btn-lg" href="@Url.Action("Index", "Class")">Classes</a>
-
+            <div class="card tiles">
+                <div class="card-body">
+                    <a href="@Url.Action("Index", "Class")" class="stretched-link">
+                        <h5 class="card-title">Classes</h5>
+                    </a>
+                </div>
+            </div>
         </div>
         <div class="col-md-4 mb-3">
-            <a class="btn btn-primary btn-lg" href="@Url.Action("HomeWorkList", "HomeWork")">Homework</a
+            <div class="card tiles">
+                <div class="card-body">
+                    <a href="@Url.Action("HomeWorkList", "HomeWork")" class="stretched-link">
+                        <h5 class="card-title">Homework</h5>
+                    </a>
+                </div>
+            </div>
         </div>
-    </div>
+    </div>   
 </div>
+
 
