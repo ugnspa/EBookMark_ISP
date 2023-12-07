@@ -3,6 +3,7 @@ using EBookMark_ISP.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Text;
+using NuGet.DependencyResolver;
 
 namespace EBookMark_ISP.Controllers
 {
@@ -24,8 +25,26 @@ namespace EBookMark_ISP.Controllers
             {
                 return RedirectToAction("Dashboard", "Home");
             }
+
+            if(permissions >= 9)
+            {
+                ViewBag.Classes = _context.Classes.Include(c => c.FkSchoolNavigation).ToList();
+            }
+            else if(permissions >=5){
+                var teacher = _context.Users.FirstOrDefault(t => t.Username == username);
+                List<string> teacher_classes = _context.Subjects
+                                          .Where(s => s.FkTeacher == teacher.Id)
+                                          .SelectMany(s => s.SubjectTimes)
+                                          .Select(st => st.FkSchedule)
+                                          .Distinct()
+                                          .Join(_context.Schedules, scheduleId => scheduleId, schedule => schedule.Id, (scheduleId, schedule) => schedule.FkClass)
+                                          .Distinct()
+                                          .ToList();
+
+                ViewBag.Classes = _context.Classes.Where(c => teacher_classes.Contains(c.Code)).Include(c => c.FkSchoolNavigation).ToList();
+            }
+
             ViewBag.Permissions = permissions;
-            ViewBag.Classes = _context.Classes.Include(c => c.FkSchoolNavigation).ToList();
             return View();
         }
         
