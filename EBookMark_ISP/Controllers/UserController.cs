@@ -1,5 +1,6 @@
 ﻿using EBookMark_ISP.Models;
 using EBookMark_ISP.Services;
+using EBookMark_ISP.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ using Org.BouncyCastle.Bcpg;
 using Org.BouncyCastle.Tls;
 using System.Text;
 using System.Xml.Linq;
+using ZstdSharp.Unsafe;
 using static Azure.Core.HttpHeader;
 
 namespace EBookMark_ISP.Controllers
@@ -50,36 +52,83 @@ namespace EBookMark_ISP.Controllers
             }
             return true;
         }
-        public IActionResult GradeBook(string name)
+        public IActionResult GradeBook(int? student_id)
         {
             if (!AccessWatcher())
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-            Console.WriteLine(name);
-            Dictionary<string, string[]> dict = new();
-            string[] marksAnglu = new string[10];
-            string[] marksMatke = new string[10];
-            string[] marksLietuviu = new string[10];
-            marksAnglu[5] = "10";
-            marksLietuviu[2] = "8";
-            marksMatke[3] = "9";
-            marksAnglu[9] = "7";
-            dict["Lietuviu"] = marksLietuviu;
-            dict["Matke"] = marksMatke;
-            dict["Anglu"] = marksAnglu;
+            string username = HttpContext.Session.GetString("Username");
+            var user_id = student_id!=null?student_id: _context.Users.FirstOrDefault(us => us.Username == username).Id;
+            Student student = _context.Students.FirstOrDefault(st => st.FkUser == user_id);
+
+            var student_schedules = _context.Schedules.Where(sh => sh.FkClass == student.FkClass).ToList();
+
+            var viewModel = new EBookMark_ISP.ViewModels.GradeBookViewModel
+            {
+                student = student,
+                schedules = new Dictionary<Schedule, List<GradeBookViewModel.SubjectMarks>>()
+            };
+
+            foreach (var schedule in student_schedules)
+            {
+                List<GradeBookViewModel.SubjectMarks> list = new List<GradeBookViewModel.SubjectMarks>();
+
+                var student_subjects_curr = _context.SubjectTimes.Where(st => st.FkSchedule == schedule.Id).Select(su => su.FkSubject).Distinct().ToList();
+                foreach(var subject in student_subjects_curr)
+                {
+                    GradeBookViewModel.SubjectMarks subject_marks= new GradeBookViewModel.SubjectMarks();
+                    subject_marks.subject = subject;
+                    var all_marks = _context.Marks.Where(ma => ma.FkStudent == student.FkUser).ToList();
+                    List<GradeBookViewModel.MarkTime> marks = new List<GradeBookViewModel.MarkTime>();
+                    foreach(var mark in all_marks)
+                    {
+                        var subjectTime = _context.SubjectTimes.Where(st => st.Id == mark.FkSubjectTime && schedule.Id == st.FkSchedule && subject == st.FkSubject).FirstOrDefault();
+
+                        if (subjectTime != null)
+                        {
+                            GradeBookViewModel.MarkTime mark_time = new GradeBookViewModel.MarkTime
+                            {
+                                time = subjectTime.StartDate,
+                                mark = mark
+                            };
+                            marks.Add(mark_time);
+                        }
+                    }
+                    subject_marks.marksTimes = marks;
+                    list.Add(subject_marks);
+                }
+                viewModel.schedules[schedule] = list;
+            }
+
+
+
+            var gradeBookString = new StringBuilder();
+            gradeBookString.AppendLine($"Grade Book for Student: {viewModel.student.Name}");
+
+            foreach (var scheduleWithMarks in viewModel.schedules)
+            {
+                var schedule = scheduleWithMarks.Key;
+                gradeBookString.AppendLine($"Schedule: {schedule.SemesterStart.ToString("d")} - {schedule.SemesterEnd.ToString("d")}");
+
+                foreach (var subjectMarks in scheduleWithMarks.Value)
+                {
+                    gradeBookString.AppendLine($"  Subject: {subjectMarks.subject}");
+
+                    foreach (var markTime in subjectMarks.marksTimes)
+                    {
+                        gradeBookString.AppendLine($"    Date: {markTime.time.ToString("g")}, Mark: {markTime.mark.Mark1}"); 
+                    }
+                }
+            }
+
+            Console.WriteLine(gradeBookString.ToString());
+
             int? permissions = HttpContext.Session.GetInt32("Permissions");
-            if (name == null && permissions == 1)
-            {
-                string username = HttpContext.Session.GetString("Username");
-                ViewBag.StudentName = username;
-            }
-            else
-            {
-                ViewBag.StudentName = name;
-            }
             ViewBag.Permissions = permissions;
-            return View(dict);
+            
+
+            return View(viewModel);
         }
 
         public IActionResult ChangePassword()
@@ -105,7 +154,7 @@ namespace EBookMark_ISP.Controllers
             try
             {
                 User user = _context.Users.FirstOrDefault(u => u.Username == username);
-                user.Password = Models.User.ComputeSha256Hash(newPassword);
+                user.Password = Hash.ComputeSha256Hash(newPassword);
                 _context.SaveChanges();
                 HttpContext.Session.SetString("Message", "Password updated successfully");
             }
@@ -145,6 +194,14 @@ namespace EBookMark_ISP.Controllers
             {
                 return RedirectToAction("Dashboard", "Home");
             }
+
+            string adminError = HttpContext.Session.GetString("AdminError");
+            if(adminError != null)
+            {
+                HttpContext.Session.Remove("AdminError");
+                ViewBag.ErrorMessage = adminError;
+            }
+
             var genders = _context.Genders.ToList();
             ViewBag.GenderOptions = new SelectList(genders, "Id", "Name");
 
@@ -155,29 +212,15 @@ namespace EBookMark_ISP.Controllers
         }
 
         [HttpPost]
-        public IActionResult Register(string username, string email,
+        public IActionResult Register(string email,
             string name, string surname, DateTime birthDate,
             string gender, string personalID, bool hasStudentID,
             string guardianName, string guardianSurname,
             string guardianPhoneNumber, string guardianEmail, string guardianAdress, int school)
         {
-            //Console.WriteLine($"Username: {username}");
-            //Console.WriteLine($"Password: {password}");
-            //Console.WriteLine($"Email: {email}");
-            //Console.WriteLine($"Name: {name}");
-            //Console.WriteLine($"Surname: {surname}");
-            //Console.WriteLine($"BirthDate: {birthDate}");
-            //Console.WriteLine($"Gender: {gender}");
-            //Console.WriteLine($"PersonalID: {personalID}");
-            //Console.WriteLine($"HasStudentID: {hasStudentID}");
-            //Console.WriteLine($"GuardianName: {guardianName}");
-            //Console.WriteLine($"GuardianSurname: {guardianSurname}");
-            //Console.WriteLine($"GuardianPhoneNumber: {guardianPhoneNumber}");
-            //Console.WriteLine($"GuardianEmail: {guardianEmail}");
-            //Console.WriteLine($"GuardianAddress: {guardianAdress}");
-            //Console.WriteLine($"TempPassword: {tempPassword}");
 
             string tempPassword = GenerateTemporaryPassword();
+            string username = GenerateUsername(name, surname);
             int userId = RegisterUser(username, tempPassword, email, 1);
             int guardianId = RegisterGuardian(guardianName, guardianSurname, guardianPhoneNumber,
                 guardianEmail, guardianAdress);
@@ -198,7 +241,7 @@ namespace EBookMark_ISP.Controllers
             GetGuardianById(guardianId).Students.Add(student);
             _context.SaveChanges();
 
-            SendPasswordEmail(tempPassword, email);
+            SendPasswordEmail(username, tempPassword, email);
 
             string currUsername = HttpContext.Session.GetString("Username");
             if (currUsername == null)
@@ -209,24 +252,13 @@ namespace EBookMark_ISP.Controllers
         }
 
         [HttpPost]
-        public IActionResult RegisterTeacher(string username, string email,
+        public IActionResult RegisterTeacher(string email,
             string name, string surname, DateTime employmentDate,
             int gender, string phoneNumber, string personalID, int school)
         {
 
             string tempPassword = GenerateTemporaryPassword();
-
-
-            //Console.WriteLine($"Username: {username}");
-            //Console.WriteLine($"Email: {email}");
-            //Console.WriteLine($"Name: {name}");
-            //Console.WriteLine($"Surname: {surname}");
-            //Console.WriteLine($"EmploymentDate: {employmentDate}");
-            //Console.WriteLine($"Gender: {gender}");
-            //Console.WriteLine($"PhoneNumber: {phoneNumber}");
-            //Console.WriteLine($"PersonalID: {personalID}");
-            //Console.WriteLine($"School: {school}");
-            //Console.WriteLine($"Password: {tempPassword}");
+            string username = GenerateUsername(name, surname);
 
             int userId = RegisterUser(username, tempPassword, email, 5);
 
@@ -250,7 +282,7 @@ namespace EBookMark_ISP.Controllers
             };
             _context.SchoolTeachers.Add(schoolTeacher);
             _context.SaveChanges();
-            SendPasswordEmail(tempPassword, email);
+            SendPasswordEmail(username, tempPassword, email);
 
 
 
@@ -265,16 +297,24 @@ namespace EBookMark_ISP.Controllers
         [HttpPost]
         public IActionResult RegisterAdmin(string username, string email)
         {
+
+            List<User> users = _context.Users.Where(u => u.Username == username).ToList();
+
+            if(users.Count > 0)
+            {
+                Console.WriteLine("USERNAME TAKEN");
+                HttpContext.Session.SetString("AdminError", "This username is already taken");
+                return RedirectToAction("Register");
+            }
+
             string tempPassword = GenerateTemporaryPassword();
-            //Console.WriteLine($"Username: {username}");
-            //Console.WriteLine($"Email: {email}");
 
             int userId = RegisterUser(username, tempPassword, email, 10);
 
             Admin admin = new Admin { FkUser = userId };
             _context.Admins.Add(admin);
             _context.SaveChanges();
-            SendPasswordEmail(tempPassword, email);
+            SendPasswordEmail(username, tempPassword, email);
             string currUsername = HttpContext.Session.GetString("Username");
             if (currUsername == null)
             {
@@ -333,7 +373,6 @@ namespace EBookMark_ISP.Controllers
                 _context.Users.Remove(userToRemove);
 
             _context.SaveChanges();
-
             return RedirectToAction("Userlist");
         }
         public IActionResult ClassInfo()
@@ -347,9 +386,10 @@ namespace EBookMark_ISP.Controllers
 
         }
 
-        private void SendPasswordEmail(string password, string email)
+        private void SendPasswordEmail(string username, string password, string email)
         {
-            _emailService.SendEmailAsync("vjaras202@gmail.com", "Temporary password", password);
+            string content = string.Format("Your usename: {0}\nYour password: {1}\n\nYou can change the password after logging in.", username, password);
+            _emailService.SendEmailAsync("vjaras202@gmail.com", "Login credentials", content);
         }
 
         private void RegisterDefaultAccounts()
@@ -455,7 +495,7 @@ namespace EBookMark_ISP.Controllers
             User user = new User
             {
                 Username = username,
-                Password = Models.User.ComputeSha256Hash(password),
+                Password = Hash.ComputeSha256Hash(password),
                 Email = email,
                 Role = role
             };
@@ -482,6 +522,20 @@ namespace EBookMark_ISP.Controllers
             _context.SaveChanges();
 
             return guardian.Id;
+        }
+
+        private string GenerateUsername(string name, string surname)
+        {
+            string username = (name.Substring(0, 3) + surname.Substring(0, 3)).ToLower();
+
+            List<User> users = _context.Users.Where(u => u.Username.StartsWith(username)).ToList();
+
+            if (users.Count == 0)
+                return username;
+
+            username = username + users.Count().ToString();
+
+            return username;
         }
 
         private Guardian GetGuardianById(int id)

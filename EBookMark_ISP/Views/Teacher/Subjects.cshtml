@@ -1,25 +1,81 @@
-﻿@model List<string>
+﻿@model EBookMark_ISP.ViewModels.StudentSubjectsViewModel
 @{
-    string student = (string)Model[0];
+    var currentDate = DateTime.Now;
+    var currentSemesterKey = Model.ScheduleSubjects.Keys.FirstOrDefault(key => currentDate >= key.SemesterStart && currentDate <= key.SemesterEnd);
 }
+<head>
+    <link rel="stylesheet" href="~/css/tiles.css" asp-append-version="true" />
+</head>
 
-<div class="container text-center pb-5 mt-5">
-    <h1>Subjects for @student</h1>
-    <div class="row">
-        @for (int i = 1; i < Model.Count; i++)
+<h1 class="name2">Subjects for @Model.student.Name @Model.student.Surname</h1>
+
+<select id="semesterDropdown" class="custom-dropdown" onchange="showSubjects(this.value)">
+    @foreach (var key in Model.ScheduleSubjects.Keys)
+    {
+        if (key == currentSemesterKey)
+        {
+            <option value="@key.Id" selected>@key.SemesterStart.ToShortDateString() - @key.SemesterEnd.ToShortDateString()</option>
+        }
+        else
+        {
+            <option value="@key.Id">@key.SemesterStart.ToShortDateString() - @key.SemesterEnd.ToShortDateString()</option>
+        }
+    }
+</select>
+
+
+@foreach (var key in Model.ScheduleSubjects.Keys)
+{
+    <div id="subjectsForSemester_@key.Id" class="row" style="display:none;">
+        @foreach (var subject in Model.ScheduleSubjects[key])
         {
             <div class="col-md-4 mb-3">
-                <a class="btn btn-primary btn-block" asp-controller="Teacher" asp-action="WriteMark" asp-route-subject="@Model[i]" asp-route-name="@student" style="width: 100%; height: 100%;">@Model[i]</a>
+                <div class="card tiles">
+                    <div class="card-body">
+                        <a href="@Url.Action("WriteMark", "Teacher", new { student_id = Model.student.FkUser, schedule_id = key.Id, subject_code = subject.Code })" class="stretched-link">
+                            <h5 class="card-title">@subject.Code @subject.Name</h5>
+                        </a>
+                    </div>
+                </div>
             </div>
         }
     </div>
+}
+
+<div class="back-button">
+    <a class="btn btn-primary" asp-controller="Teacher" asp-action="Student" asp-route-student_id="@Model.student.FkUser">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5" />
+        </svg>
+        Student Page
+    </a>
 </div>
-<div class="container text-center pb-5 mt-5">
-    <div class="row">
-        <div class="col-md-4 mb-3">
-            <a class="btn btn-primary btn-lg" asp-controller="Teacher" asp-action="Student" asp-route-name="@student">Back To Student window</a>
-        </div>
-    </div>
-</div>
+
+<script>
+    function showSubjects(semesterId) {
+    @foreach (var key in Model.ScheduleSubjects.Keys)
+    {
+        <text>
+                    var subjectsDiv = document.getElementById('subjectsForSemester_@key.Id');
+            if (subjectsDiv) {
+                subjectsDiv.style.display = 'none';
+            }
+        </text>
+    }
+
+            var selectedSubjectsDiv = document.getElementById('subjectsForSemester_' + semesterId);
+        if (selectedSubjectsDiv) {
+            selectedSubjectsDiv.style.display = '';
+        }
+    }
+
+    window.onload = function() {
+        var currentSemesterId = '@(currentSemesterKey?.Id)';
+        if (currentSemesterId) {
+            showSubjects(currentSemesterId);
+        }
+    };
+</script>
+
 
 

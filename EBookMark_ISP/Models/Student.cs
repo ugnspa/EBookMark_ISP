@@ -35,5 +35,5 @@ public partial class Student
 
     public virtual Gender GenderNavigation { get; set; } = null!;
 
-    public virtual Mark? Mark { get; set; }
+    public virtual ICollection<Mark> Marks { get; set; } = new List<Mark>();
 }

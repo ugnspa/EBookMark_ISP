@@ -31,7 +31,7 @@ namespace EBookMark_ISP.Controllers
 
             // Perform authentication logic here.
 
-            string passwordHash = Models.User.ComputeSha256Hash(password);
+            string passwordHash = Hash.ComputeSha256Hash(password);
             int permissions;
             if ((permissions = IsValidUser(username, passwordHash)) != -1)
             {

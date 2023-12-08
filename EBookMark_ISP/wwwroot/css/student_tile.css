@@ -28,7 +28,7 @@
         color: #000000;
         text-decoration: underline;
         text-decoration-color: #000000;
-        text-decoration-thickness: 2px;
+        text-decoration-thickness:0.2rem;
     }
 
 .class-name {
