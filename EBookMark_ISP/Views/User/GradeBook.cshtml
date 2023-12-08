@@ -69,25 +69,51 @@
                                 <td>@subject.subject</td>
                                 @for (int day = 1; day <= daysInMonth; day++)
                                 {
-                                    var markForDay = subject.marksTimes.FirstOrDefault(mt => mt.time.Day == day && mt.time.Month == i.Month);
+                                    var marksForDay = subject.marksTimes.Where(mt => mt.time.Day == day && mt.time.Month == i.Month).ToList();
 
-                                    <td @if(ViewBag.Permissions == 5 && Model.teachers_subject.Contains(subject.subject) && markForDay != null) {
-                                            @:onclick="location.href='@Url.Action("EditMark", "Teacher", new { mark_id = markForDay.mark.Id, schedule_id =key.Id, subject_code =subject.subject })'"
+                                    <td @if(ViewBag.Permissions == 5 && Model.teachers_subject.Contains(subject.subject) && marksForDay != null && marksForDay.Count==1 ) {
+                                            @:onclick="location.href='@Url.Action("EditMark", "Teacher", new { mark_id = marksForDay.First().mark.Id, schedule_id =key.Id, subject_code =subject.subject })'"
                                             @:style="cursor:pointer; font-weight: bold;"
                                             }>
-                                        @if (markForDay != null)
+                                        @if (marksForDay != null && marksForDay.Count == 1)
                                         {
                                             <div>
-                                                @markForDay.mark.Mark1
+                                                @marksForDay.First().mark.Mark1
                                                 <div class="mark-popup">
-                                                    Comment: @markForDay.mark.Comment <br>
-                                                    Date: @markForDay.mark.RegistrationDate.ToString("yyyy-MM-dd")
+                                                    Comment: @marksForDay.First().mark.Comment <br>
+                                                    Date: @marksForDay.First().mark.RegistrationDate.ToString("yyyy-MM-dd")
                                                 </div>
                                             </div>
                                         }
-                                        else
+                                        @if(marksForDay.Count==0)
                                         {
                                             
+                                        }
+                                        @if (marksForDay.Count > 1 && ViewBag.Permissions == 5 && Model.teachers_subject.Contains(subject.subject))
+                                        {
+                                            foreach(var mark in marksForDay)
+                                            {
+                                                <a class="double-mark" href="@Url.Action("EditMark", "Teacher", new { mark_id = mark.mark.Id, schedule_id = key.Id, subject_code = subject.subject })" style="display: block;">
+                                                    @mark.mark.Mark1
+                                                    <div class="mark-popup2">
+                                                        Comment: @mark.mark.Comment <br>
+                                                        Date: @mark.mark.RegistrationDate.ToString("yyyy-MM-dd")
+                                                    </div>
+                                                </a>
+                                            }
+                                        }
+                                        else if (marksForDay.Count > 1)
+                                        {
+                                            foreach(var mark in marksForDay)
+                                            {
+                                                <div class="double-mark2">
+                                                    @mark.mark.Mark1
+                                                    <div class="mark-popup2">
+                                                    Comment: @mark.mark.Comment <br>
+                                                    Date: @mark.mark.RegistrationDate.ToString("yyyy-MM-dd")
+                                                </div>
+                                                </div>
+                                            }
                                         }
                                     </td>
 
