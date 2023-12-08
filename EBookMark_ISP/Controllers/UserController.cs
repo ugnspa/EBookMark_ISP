@@ -62,13 +62,19 @@ namespace EBookMark_ISP.Controllers
             var user_id = student_id!=null?student_id: _context.Users.FirstOrDefault(us => us.Username == username).Id;
             Student student = _context.Students.FirstOrDefault(st => st.FkUser == user_id);
 
-            var student_schedules = _context.Schedules.Where(sh => sh.FkClass == student.FkClass).ToList();
-
             var viewModel = new EBookMark_ISP.ViewModels.GradeBookViewModel
             {
                 student = student,
                 schedules = new Dictionary<Schedule, List<GradeBookViewModel.SubjectMarks>>()
             };
+            if (student_id !=null)
+            {
+                var ud = _context.Users.FirstOrDefault(us => us.Username == username).Id;
+                var teacher_subjects = _context.Subjects.Where(sb => sb.FkTeacher== ud).Select(sb => sb.Code).ToList();
+                viewModel.teachers_subject = teacher_subjects;
+            }
+
+            var student_schedules = _context.Schedules.Where(sh => sh.FkClass == student.FkClass).ToList();
 
             foreach (var schedule in student_schedules)
             {
@@ -101,32 +107,15 @@ namespace EBookMark_ISP.Controllers
                 viewModel.schedules[schedule] = list;
             }
 
-
-
-            var gradeBookString = new StringBuilder();
-            gradeBookString.AppendLine($"Grade Book for Student: {viewModel.student.Name}");
-
-            foreach (var scheduleWithMarks in viewModel.schedules)
-            {
-                var schedule = scheduleWithMarks.Key;
-                gradeBookString.AppendLine($"Schedule: {schedule.SemesterStart.ToString("d")} - {schedule.SemesterEnd.ToString("d")}");
-
-                foreach (var subjectMarks in scheduleWithMarks.Value)
-                {
-                    gradeBookString.AppendLine($"  Subject: {subjectMarks.subject}");
-
-                    foreach (var markTime in subjectMarks.marksTimes)
-                    {
-                        gradeBookString.AppendLine($"    Date: {markTime.time.ToString("g")}, Mark: {markTime.mark.Mark1}"); 
-                    }
-                }
-            }
-
-            Console.WriteLine(gradeBookString.ToString());
-
             int? permissions = HttpContext.Session.GetInt32("Permissions");
             ViewBag.Permissions = permissions;
-            
+            string? message = HttpContext.Session.GetString("Message");
+            if (message != null)
+            {
+                ViewBag.Message = message;
+                HttpContext.Session.Remove("Message");
+            }
+
 
             return View(viewModel);
         }
