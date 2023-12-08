@@ -8,9 +8,14 @@
     <link rel="stylesheet" href="~/css/tiles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/nabButtons.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Gradebook.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/alert_style.css" asp-append-version="true" />
 </head>
-
 <h1>@Model.student.Name @Model.student.Surname GradeBook</h1>
+<div id="customAlert" class="custom-alert" style="display:none;">
+    <div class="custom-alert-content">
+        <p id="customAlertMessage"></p>
+    </div>
+</div>
 
 <select id="semesterDropdown" class="custom-dropdown" onchange="showSchedules(this.value)">
     @foreach (var key in Model.schedules.Keys)
@@ -65,20 +70,32 @@
                                 @for (int day = 1; day <= daysInMonth; day++)
                                 {
                                     var markForDay = subject.marksTimes.FirstOrDefault(mt => mt.time.Day == day && mt.time.Month == i.Month);
-                                    <td>
-                                        @(markForDay?.mark.Mark1 ?? "")
+
+                                    <td @if(ViewBag.Permissions == 5 && Model.teachers_subject.Contains(subject.subject) && markForDay != null) {
+                                            @:onclick="location.href='@Url.Action("EditMark", "Teacher", new { mark_id = markForDay.mark.Id, schedule_id =key.Id, subject_code =subject.subject })'"
+                                            @:style="cursor:pointer; font-weight: bold;"
+                                            }>
                                         @if (markForDay != null)
                                         {
-                                            <div class="mark-popup">
-                                                Comment: @markForDay.mark.Comment <br>
-                                                Date: @markForDay.mark.RegistrationDate.ToString("yyyy-MM-dd")
+                                            <div>
+                                                @markForDay.mark.Mark1
+                                                <div class="mark-popup">
+                                                    Comment: @markForDay.mark.Comment <br>
+                                                    Date: @markForDay.mark.RegistrationDate.ToString("yyyy-MM-dd")
+                                                </div>
                                             </div>
                                         }
+                                        else
+                                        {
+                                            
+                                        }
                                     </td>
+
                                 }
                                 <td>@subject.average()</td>
                             </tr>
                         }
+
                     </tbody>
                 </table>
             </div>
@@ -86,10 +103,33 @@
         }
     </div>
 }
+@if (ViewBag.Permissions == 5)
+{
+    <div class="back-button">
+    <a class="btn btn-primary" asp-controller="Teacher" asp-action="Student" asp-route-student_id="@Model.student.FkUser">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5" />
+        </svg>
+        Student Page
+    </a>
+</div>
+
+}
 
 
 
 <script>
+    function showCustomAlert(message) {
+    document.getElementById('customAlertMessage').innerText = message;
+    document.getElementById('customAlert').style.display = 'block';
+
+    setTimeout(function() {
+        document.getElementById('customAlert').style.display = 'none';
+    }, 2500);
+}
+    function closeCustomAlert() {
+        document.getElementById('customAlert').style.display = 'none';
+    }
     function showSchedules(semester_id) {
     var semesters = document.querySelectorAll("div[id^='semester_']");
     semesters.forEach(function(div) {
@@ -120,6 +160,10 @@
     }
 
 window.onload = function() {
+    @if (ViewBag.Message != null)
+    {
+        @:showCustomAlert('@Html.Raw(ViewBag.Message)');
+    }
     var currentSemesterId = '@(currentSchedule?.Id)';
     if (currentSemesterId) {
         showSchedules(currentSemesterId);
