@@ -183,6 +183,14 @@ namespace EBookMark_ISP.Controllers
             {
                 return RedirectToAction("Dashboard", "Home");
             }
+
+            string adminError = HttpContext.Session.GetString("AdminError");
+            if(adminError != null)
+            {
+                HttpContext.Session.Remove("AdminError");
+                ViewBag.ErrorMessage = adminError;
+            }
+
             var genders = _context.Genders.ToList();
             ViewBag.GenderOptions = new SelectList(genders, "Id", "Name");
 
@@ -193,29 +201,15 @@ namespace EBookMark_ISP.Controllers
         }
 
         [HttpPost]
-        public IActionResult Register(string username, string email,
+        public IActionResult Register(string email,
             string name, string surname, DateTime birthDate,
             string gender, string personalID, bool hasStudentID,
             string guardianName, string guardianSurname,
             string guardianPhoneNumber, string guardianEmail, string guardianAdress, int school)
         {
-            //Console.WriteLine($"Username: {username}");
-            //Console.WriteLine($"Password: {password}");
-            //Console.WriteLine($"Email: {email}");
-            //Console.WriteLine($"Name: {name}");
-            //Console.WriteLine($"Surname: {surname}");
-            //Console.WriteLine($"BirthDate: {birthDate}");
-            //Console.WriteLine($"Gender: {gender}");
-            //Console.WriteLine($"PersonalID: {personalID}");
-            //Console.WriteLine($"HasStudentID: {hasStudentID}");
-            //Console.WriteLine($"GuardianName: {guardianName}");
-            //Console.WriteLine($"GuardianSurname: {guardianSurname}");
-            //Console.WriteLine($"GuardianPhoneNumber: {guardianPhoneNumber}");
-            //Console.WriteLine($"GuardianEmail: {guardianEmail}");
-            //Console.WriteLine($"GuardianAddress: {guardianAdress}");
-            //Console.WriteLine($"TempPassword: {tempPassword}");
 
             string tempPassword = GenerateTemporaryPassword();
+            string username = GenerateUsername(name, surname);
             int userId = RegisterUser(username, tempPassword, email, 1);
             int guardianId = RegisterGuardian(guardianName, guardianSurname, guardianPhoneNumber,
                 guardianEmail, guardianAdress);
@@ -236,7 +230,7 @@ namespace EBookMark_ISP.Controllers
             GetGuardianById(guardianId).Students.Add(student);
             _context.SaveChanges();
 
-            SendPasswordEmail(tempPassword, email);
+            SendPasswordEmail(username, tempPassword, email);
 
             string currUsername = HttpContext.Session.GetString("Username");
             if (currUsername == null)
@@ -247,24 +241,13 @@ namespace EBookMark_ISP.Controllers
         }
 
         [HttpPost]
-        public IActionResult RegisterTeacher(string username, string email,
+        public IActionResult RegisterTeacher(string email,
             string name, string surname, DateTime employmentDate,
             int gender, string phoneNumber, string personalID, int school)
         {
 
             string tempPassword = GenerateTemporaryPassword();
-
-
-            //Console.WriteLine($"Username: {username}");
-            //Console.WriteLine($"Email: {email}");
-            //Console.WriteLine($"Name: {name}");
-            //Console.WriteLine($"Surname: {surname}");
-            //Console.WriteLine($"EmploymentDate: {employmentDate}");
-            //Console.WriteLine($"Gender: {gender}");
-            //Console.WriteLine($"PhoneNumber: {phoneNumber}");
-            //Console.WriteLine($"PersonalID: {personalID}");
-            //Console.WriteLine($"School: {school}");
-            //Console.WriteLine($"Password: {tempPassword}");
+            string username = GenerateUsername(name, surname);
 
             int userId = RegisterUser(username, tempPassword, email, 5);
 
@@ -288,7 +271,7 @@ namespace EBookMark_ISP.Controllers
             };
             _context.SchoolTeachers.Add(schoolTeacher);
             _context.SaveChanges();
-            SendPasswordEmail(tempPassword, email);
+            SendPasswordEmail(username, tempPassword, email);
 
 
 
@@ -303,16 +286,24 @@ namespace EBookMark_ISP.Controllers
         [HttpPost]
         public IActionResult RegisterAdmin(string username, string email)
         {
+
+            List<User> users = _context.Users.Where(u => u.Username == username).ToList();
+
+            if(users.Count > 0)
+            {
+                Console.WriteLine("USERNAME TAKEN");
+                HttpContext.Session.SetString("AdminError", "This username is already taken");
+                return RedirectToAction("Register");
+            }
+
             string tempPassword = GenerateTemporaryPassword();
-            //Console.WriteLine($"Username: {username}");
-            //Console.WriteLine($"Email: {email}");
 
             int userId = RegisterUser(username, tempPassword, email, 10);
 
             Admin admin = new Admin { FkUser = userId };
             _context.Admins.Add(admin);
             _context.SaveChanges();
-            SendPasswordEmail(tempPassword, email);
+            SendPasswordEmail(username, tempPassword, email);
             string currUsername = HttpContext.Session.GetString("Username");
             if (currUsername == null)
             {
@@ -371,7 +362,6 @@ namespace EBookMark_ISP.Controllers
                 _context.Users.Remove(userToRemove);
 
             _context.SaveChanges();
-
             return RedirectToAction("Userlist");
         }
         public IActionResult ClassInfo()
@@ -385,9 +375,10 @@ namespace EBookMark_ISP.Controllers
 
         }
 
-        private void SendPasswordEmail(string password, string email)
+        private void SendPasswordEmail(string username, string password, string email)
         {
-            _emailService.SendEmailAsync("vjaras202@gmail.com", "Temporary password", password);
+            string content = string.Format("Your usename: {0}\nYour password: {1}\n\nYou can change the password after logging in.", username, password);
+            _emailService.SendEmailAsync("vjaras202@gmail.com", "Login credentials", content);
         }
 
         private void RegisterDefaultAccounts()
@@ -520,6 +511,20 @@ namespace EBookMark_ISP.Controllers
             _context.SaveChanges();
 
             return guardian.Id;
+        }
+
+        private string GenerateUsername(string name, string surname)
+        {
+            string username = (name.Substring(0, 3) + surname.Substring(0, 3)).ToLower();
+
+            List<User> users = _context.Users.Where(u => u.Username.StartsWith(username)).ToList();
+
+            if (users.Count == 0)
+                return username;
+
+            username = username + users.Count().ToString();
+
+            return username;
         }
 
         private Guardian GetGuardianById(int id)

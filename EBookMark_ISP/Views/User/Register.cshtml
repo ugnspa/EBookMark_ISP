@@ -84,9 +84,22 @@
 
 
     <div class="row">
+
+       
+
         <div class="col-md-6 offset-md-3">
             <h2>Register user</h2>
+            
             <br>
+
+            @{
+                var errorMessage = ViewData["ErrorMessage"] as string;
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <center><p style="color: red">Registration failed: @errorMessage</p></center>
+                }
+            }
+
             <label for="userType">Select User Type:</label>
             <select id="userType" class="form-control">
                 <option value="" disabled selected>Select user type</option>
@@ -105,10 +118,10 @@
                     </select>
                 </div>
                 <h3>Student information</h3>
-                <div class="mb-3">
+                @*<div class="mb-3">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" class="form-control" required>
-                </div>
+                </div>*@
                 <div class="mb-3">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" class="form-control" required>
@@ -185,10 +198,10 @@
                     </select>
                 </div>
 
-                <div class="mb-3">
+                @*<div class="mb-3">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" class="form-control" required>
-                </div>
+                </div>*@
                 <div class="mb-3">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" class="form-control" required>
