@@ -264,6 +264,29 @@ namespace EBookMark_ISP.Controllers
             return RedirectToAction("GradeBook", "User", new { student_id = viewModel.Mark.FkStudent });
         }
 
+        [HttpPost]
+        public IActionResult DeleteMark(int mark_id, int student_id)
+        {
+            if (!AccessTeacher())
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+
+            try
+            {
+                _context.Marks.Remove(_context.Marks.Find(mark_id));
+                _context.SaveChanges();
+                HttpContext.Session.SetString("Message", "Mark Has Been Deleted Successfully");
+            }
+            catch
+            {
+                HttpContext.Session.SetString("Message", "Error Occurred While Deleting The Mark");
+                return RedirectToAction("GradeBook", "User", new { student_id = student_id });
+            }
+
+            return RedirectToAction("GradeBook", "User", new { student_id = student_id });
+        }
+
 
     }
 }
