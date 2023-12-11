@@ -11,7 +11,7 @@
     <!-- Start Time -->
     <div>
         <label for="start">Start Time:</label>
-        <input type="datetime-local" id="start" name="Start" required />
+        <input type="datetime-local" id="start" name="Start" required onchange="updateMinimumEndTime()" />
     </div>
 
     <!-- End Time -->
@@ -19,6 +19,7 @@
         <label for="end">End Time:</label>
         <input type="datetime-local" id="end" name="End" required />
     </div>
+
 
     <!-- Description -->
     <div>
@@ -109,4 +110,11 @@
             }
         });
     });
+</script>
+
+<script>
+    function updateMinimumEndTime() {
+        var startTime = document.getElementById('start').value;
+        document.getElementById('end').setAttribute('min', startTime);
+    }
 </script>

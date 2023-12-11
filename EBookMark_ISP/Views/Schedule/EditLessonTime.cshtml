@@ -12,7 +12,7 @@
 
     <div>
         <label for="start">Start Time:</label>
-        <input type="datetime-local" id="start" name="Start" value="@Model.StartDate.ToString("yyyy-MM-ddTHH:mm")" required />
+        <input type="datetime-local" id="start" name="Start" value="@Model.StartDate.ToString("yyyy-MM-ddTHH:mm")" required onchange="updateMinimumEndTime()" />
     </div>
 
     <div>
@@ -97,6 +97,19 @@
             classroomDropdown.value = initialClassroomId; // Reset to initial value
         }
     }
+    document.addEventListener('DOMContentLoaded', function () {
+        // Ensures the DOM is fully loaded before attaching event listeners
+
+        var startTimeInput = document.getElementById('start');
+        var endTimeInput = document.getElementById('end');
+
+        if (startTimeInput && endTimeInput) {
+            startTimeInput.addEventListener('change', function () {
+                var selectedTime = startTimeInput.value;
+                endTimeInput.setAttribute('min', selectedTime);
+            });
+        }
+    });
 </script>
 
 
