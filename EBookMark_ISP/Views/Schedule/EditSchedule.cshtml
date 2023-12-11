@@ -7,6 +7,12 @@
 <h2>Edit Schedule</h2>
 <a href="@Url.Action("Index", "Schedule")" class="btn btn-default">Return to Schedule List</a>
 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
 <form asp-controller="Schedule" asp-action="UpdateSchedule" method="post">
     @Html.HiddenFor(m => m.Id) <!-- Hidden ID to ensure it gets posted back, but not editable -->
 
