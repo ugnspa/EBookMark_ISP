@@ -61,6 +61,10 @@
 @{
     var currentDate = DateTime.Now;
     var currentSemesterKey = Model.schedule_subjects.Keys.FirstOrDefault(key => currentDate >= key.SemesterStart && currentDate <= key.SemesterEnd);
+    if (currentSemesterKey == null)
+    {
+        currentSemesterKey = Model.schedule_subjects.Keys.First();
+    }
     EBookMark_ISP.ViewModels.RankingViewModel ranking = new EBookMark_ISP.ViewModels.RankingViewModel();
 }
 <div class="container">
