@@ -184,11 +184,11 @@ namespace EBookMark_ISP.Controllers
                 return RedirectToAction("Dashboard", "Home");
             }
 
-            string adminError = HttpContext.Session.GetString("AdminError");
-            if(adminError != null)
+            string message = HttpContext.Session.GetString("Message");
+            if(message != null)
             {
-                HttpContext.Session.Remove("AdminError");
-                ViewBag.ErrorMessage = adminError;
+                HttpContext.Session.Remove("Message");
+                ViewBag.Message = message;
             }
 
             var genders = _context.Genders.ToList();
@@ -207,12 +207,38 @@ namespace EBookMark_ISP.Controllers
             string guardianName, string guardianSurname,
             string guardianPhoneNumber, string guardianEmail, string guardianAdress, int school)
         {
+            string currUsername = HttpContext.Session.GetString("Username");
+            if (currUsername == null)
+            {
+                return RedirectToAction("Dashboard", "Home");
+
+            }
 
             string tempPassword = GenerateTemporaryPassword();
             string username = GenerateUsername(name, surname);
-            int userId = RegisterUser(username, tempPassword, email, 1);
-            int guardianId = RegisterGuardian(guardianName, guardianSurname, guardianPhoneNumber,
+            int userId = -1;
+            int guardianId = -1;
+            try
+            {
+                userId = RegisterUser(username, tempPassword, email, 1);
+            }
+            catch
+            {
+                HttpContext.Session.SetString("Message", "Could not register user");
+                return RedirectToAction("Register");
+            }
+
+            try
+            {
+                guardianId = RegisterGuardian(guardianName, guardianSurname, guardianPhoneNumber,
                 guardianEmail, guardianAdress);
+            }
+            catch
+            {
+                HttpContext.Session.SetString("Message", "Could not register guardian");
+                return RedirectToAction("Register");
+            }
+            
             var student = new Student
             {
                 PersonalCode = personalID,
@@ -226,17 +252,20 @@ namespace EBookMark_ISP.Controllers
                 FkGuardian = guardianId // Replace with the correct guardian ID
             };
 
-            _context.Students.Add(student);
-            GetGuardianById(guardianId).Students.Add(student);
-            _context.SaveChanges();
-
-            SendPasswordEmail(username, tempPassword, email);
-
-            string currUsername = HttpContext.Session.GetString("Username");
-            if (currUsername == null)
+            try
             {
-                return RedirectToAction("Dashboard", "Home");
+                _context.Students.Add(student);
+                GetGuardianById(guardianId).Students.Add(student);
+                _context.SaveChanges();
+                SendPasswordEmail(username, tempPassword, email);
             }
+            catch
+            {
+                HttpContext.Session.SetString("Message", "Could not register user");
+                return RedirectToAction("Register");
+            }
+
+           
             return RedirectToAction("Userlist");
         }
 
@@ -249,7 +278,17 @@ namespace EBookMark_ISP.Controllers
             string tempPassword = GenerateTemporaryPassword();
             string username = GenerateUsername(name, surname);
 
-            int userId = RegisterUser(username, tempPassword, email, 5);
+            int userId = -1;
+            try
+            {
+                userId = RegisterUser(username, tempPassword, email, 5);
+            }
+            catch
+            {
+                HttpContext.Session.SetString("Message", "Could not register user");
+                return RedirectToAction("Register");
+            }
+            
 
             Teacher teacher = new Teacher
             {
@@ -262,16 +301,24 @@ namespace EBookMark_ISP.Controllers
                 FkUser = userId
             };
 
-            _context.Teachers.Add(teacher);
-            _context.SaveChanges();
-            SchoolTeacher schoolTeacher = new SchoolTeacher 
-            { 
-                FkTeacher = userId, 
-                FkSchool = school 
-            };
-            _context.SchoolTeachers.Add(schoolTeacher);
-            _context.SaveChanges();
-            SendPasswordEmail(username, tempPassword, email);
+            try
+            {
+                _context.Teachers.Add(teacher);
+                _context.SaveChanges();
+                SchoolTeacher schoolTeacher = new SchoolTeacher
+                {
+                    FkTeacher = userId,
+                    FkSchool = school
+                };
+                _context.SchoolTeachers.Add(schoolTeacher);
+                _context.SaveChanges();
+                SendPasswordEmail(username, tempPassword, email);
+            }
+            catch
+            {
+                HttpContext.Session.SetString("Message", "Could not register user");
+                return RedirectToAction("Register");
+            }
 
 
 
@@ -291,7 +338,7 @@ namespace EBookMark_ISP.Controllers
 
             if(users.Count > 0)
             {
-                HttpContext.Session.SetString("AdminError", "This username is already taken");
+                HttpContext.Session.SetString("Message", "This username is already taken");
                 return RedirectToAction("Register");
             }
 
