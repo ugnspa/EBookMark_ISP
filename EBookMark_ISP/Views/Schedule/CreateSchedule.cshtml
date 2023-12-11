@@ -9,7 +9,7 @@
 
     <div class="form-group">
         <label for="SemestarStart">Start of Semester:</label>
-        <input type="date" id="SemestarStart" name="SemestarStart" class="form-control" required />
+        <input type="date" id="SemestarStart" name="SemestarStart" class="form-control" required onchange="updateMinimumEndDate()" />
     </div>
 
     <div class="form-group">
@@ -20,7 +20,7 @@
     <div class="form-group">
         <label for="ClassName">Class:</label>
         <select id="ClassName" name="ClassId" class="form-control" required>
-            @foreach (Class c in Model) 
+            @foreach (Class c in Model)
             {
                 <option value="@c.Code">@c.Name</option>
             }
@@ -29,3 +29,11 @@
 
     <button type="submit" class="btn btn-primary">Next</button>
 </form>
+
+<script>
+    function updateMinimumEndDate() {
+        var startDate = document.getElementById('SemestarStart').value;
+        document.getElementById('SemestarEnd').setAttribute('min', startDate);
+    }
+</script>
+

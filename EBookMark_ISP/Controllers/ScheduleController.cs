@@ -32,7 +32,8 @@ namespace EBookMark_ISP.Controllers
                     //Schedule fullSchedule2 = CreateFullSchedule(2);
                     //List<Schedule> list = new List<Schedule> { fullSchedule, fullSchedule2 };
                     //var schedules = _context.Users.Where(u => u.Admin != null).ToList();
-                    var schedules = _context.Schedules.Include(s => s.FkClassNavigation).ToList();
+                    var schedules = _context.Schedules.Include(s => s.FkClassNavigation).OrderBy(s => s.SemesterStart).ThenBy(s => s.FkClassNavigation.Name).
+                        ToList();
                     ViewBag.Permissions = access;
                     return View("ScheduleList", schedules);
                 }
@@ -63,7 +64,7 @@ namespace EBookMark_ISP.Controllers
 
 
             var lessonsForSelectedWeek = _context.SubjectTimes.Where(l => l.FkSchedule == fullSchedule.Id && 
-            l.StartDate >= selectedWeekDates.Item1 && l.EndDate <= selectedWeekDates.Item2).Include(l => l.FkClassroomNavigation).Include(l => l.FkSubjectNavigation).Include(l => l.TypeNavigation).ToList();
+            l.StartDate >= selectedWeekDates.Item1 && l.EndDate <= selectedWeekDates.Item2.AddDays(1)).Include(l => l.FkClassroomNavigation).Include(l => l.FkSubjectNavigation).Include(l => l.TypeNavigation).ToList();
             //var lessonsForSelectedWeek = fullSchedule.Lessons
             //    .Where(lesson => lesson.Start >= selectedWeekDates.Item1 && lesson.End <= selectedWeekDates.Item2)
             //    .ToList();
@@ -137,25 +138,41 @@ namespace EBookMark_ISP.Controllers
         }
 
         [HttpPost]
-        public IActionResult GenerateAndAddSchedule(DateTime semesterStart, DateTime semesterEnd, string className, List<string> Subjects, List<int> Amounts)
+        public IActionResult GenerateAndAddSchedule(DateTime semesterStart, DateTime semesterEnd, string className, List<string> Subjects, List<int> Amounts, List<string> ClassroomTypes)
         {
             //validation
             //lesson length = 45min
-            //if (Amounts.Sum() > 30)
-            //{
-            //    //per daug pamoku
-            //}
-            //var schedule = new Schedule
-            //{
-            //    SemesterStart = semesterStart,
-            //    SemesterEnd = semesterEnd,
-            //    //className has code value
-            //    FkClass = className.ToString()
-            //};
-            //int classSize = _context.Classes.Find(className).StudentsCount;
-            //var classrooms = _context.Classrooms.Where(c => c.Capacity >= classSize).ToList();
-            //var subjetTimes = _context.SubjectTimes.Where(s => s.StartDate > semesterStart && s.StartDate < semesterEnd).ToList();
-            //var TakenSlots = new List<SubjectTime>();
+
+            if (Amounts.Sum() > 30)
+            {
+                ModelState.AddModelError("", "Savaitei nurodyta per daug pamoku");
+                //per daug pamoku
+            }
+            var schedule = new Schedule
+            {
+                SemesterStart = semesterStart,
+                SemesterEnd = semesterEnd,
+                //className has code value
+                FkClass = className.ToString()
+            };
+            _context.Schedules.Add(schedule);
+            _context.SaveChanges();
+            if (!ValidateSchedule(schedule))
+            {
+                ModelState.AddModelError("", "Nurodytame semestro laikotarpyje jau egzistuoja tvarkaraštis šiai klasei");
+            }
+
+
+            var totalWeeks = CalculateTotalWeeks(schedule.SemesterStart, schedule.SemesterEnd);
+            for (var i = 1; i <= totalWeeks; i++)
+            {
+                Tuple<DateTime, DateTime> selectedWeekDates = CalculateWeekDates(schedule.SemesterStart, i);
+                generateWeeklySchedule(schedule, Subjects, new List<int>(Amounts), ClassroomTypes, selectedWeekDates);
+            }
+
+
+
+
             //for (DateTime i = semesterStart; i < semesterStart.AddDays(7); i = i.AddDays(1))
             //{
             //    for (DateTime j = i.AddHours(8); j < i.AddHours)
@@ -167,15 +184,222 @@ namespace EBookMark_ISP.Controllers
             //        //for (DateTime t = )
             //    }
             //}
-            return RedirectToAction("EditSchedule", new { scheduleId = 1 });
+            return RedirectToAction("EditSchedule", new { scheduleId = schedule.Id });
         }
+
+        public void generateWeeklySchedule(Schedule schedule, List<string> Subjects, List<int> Amounts, List<string> ClassroomTypes, Tuple<DateTime, DateTime> selectedWeekDates)
+        {
+            int classSize = _context.Classes.Find(schedule.FkClass).StudentsCount;
+            var classrooms = _context.Classrooms.Where(c => c.Capacity >= classSize).ToList();
+            var subjectTimes = _context.SubjectTimes.Where(s => s.StartDate >= selectedWeekDates.Item1 && s.StartDate < selectedWeekDates.Item2).ToList();
+
+            var timeSlots = new TimeSpan[]
+            {
+                new TimeSpan(8, 0, 0),
+                new TimeSpan(8, 55, 0),
+                new TimeSpan(9, 50, 0),
+                new TimeSpan(10, 35, 0),
+                new TimeSpan(12, 00, 0),
+                new TimeSpan(12, 45, 0)
+            };
+
+            // Identify working days (Monday to Friday) in the selected week
+            List<DateTime> workingDays = Enumerable.Range(0, (selectedWeekDates.Item2 - selectedWeekDates.Item1).Days)
+                                                    .Select(day => selectedWeekDates.Item1.AddDays(day))
+                                                    .Where(date => date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday)
+                                                    .ToList();
+            int i = 0;
+            int count = 0;
+            DateTime currentWeekDay = selectedWeekDates.Item1;
+            while (true)
+            {
+                bool added = false;
+                //Console.WriteLine(Amounts[i]);
+                if (Amounts.All(x => x == 0))
+                    break;
+                string subject = Subjects[i];
+                string requiredClassroomType = ClassroomTypes[i];
+                foreach (var classroom in classrooms.Where(c => c.UseCase == requiredClassroomType))
+                {
+
+                    foreach (var slot in timeSlots)
+                    {
+
+                        DateTime startTime = currentWeekDay + slot;
+                        DateTime endTime = startTime.AddMinutes(45); // 45-minute lesson
+
+                        bool isClassroomOccupied = subjectTimes.Any(st => st.FkClassroom == classroom.Id && st.StartDate >= startTime && st.StartDate < endTime);
+                        bool isClassScheduled = subjectTimes.Any(st => st.StartDate >= startTime && st.StartDate < endTime && st.FkSchedule == schedule.Id);
+
+                        if (!isClassroomOccupied && !isClassScheduled)
+                        {
+                            var newSubjectTime = new SubjectTime
+                            {
+                                Type = 1,
+                                Descrtiption = subject,
+                                FkSchedule = schedule.Id,
+                                FkClassroom = classroom.Id,
+                                FkSubject = subject,
+                                StartDate = startTime,
+                                EndDate = endTime
+                            };
+
+                            _context.SubjectTimes.Add(newSubjectTime);
+                            subjectTimes.Add(newSubjectTime); // Update the list with the newly scheduled subject time
+                            Amounts[i] = Amounts[i] - 1;
+                            i++;
+                            if (i >= Subjects.Count())
+                                i = 0;
+                            int c = 0;
+                            while (Amounts[i] <= 0)
+                            {
+                                i++;
+                                if (i >= Subjects.Count())
+                                    i = 0;
+                                c++;
+                                if (c >= Subjects.Count())
+                                    break;
+                            }
+                            if (currentWeekDay > selectedWeekDates.Item2)
+                                currentWeekDay = selectedWeekDates.Item1;
+                            else currentWeekDay = currentWeekDay.AddDays(1);
+                            if (currentWeekDay.DayOfWeek == DayOfWeek.Sunday)
+                                currentWeekDay = currentWeekDay.AddDays(1);
+                            else if (currentWeekDay.DayOfWeek == DayOfWeek.Saturday)
+                            {
+                                currentWeekDay = currentWeekDay.AddDays(2);
+                            }
+                            if (currentWeekDay > selectedWeekDates.Item2)
+                                currentWeekDay = selectedWeekDates.Item1;
+                            added = true;
+                            count = 0;
+                            break;
+                        }
+                    }
+                    if (added)
+                    {
+                        break;
+                    }
+                    
+                }
+                if (!added)
+                {
+                    count++;
+                    if (currentWeekDay == selectedWeekDates.Item2)
+                        currentWeekDay = selectedWeekDates.Item1;
+                    else currentWeekDay = currentWeekDay.AddDays(1);
+                    if (currentWeekDay.DayOfWeek == DayOfWeek.Sunday)
+                        currentWeekDay = currentWeekDay.AddDays(1);
+                    else if (currentWeekDay.DayOfWeek == DayOfWeek.Saturday)
+                    {
+                        currentWeekDay = currentWeekDay.AddDays(2);
+                    }
+                    if (currentWeekDay > selectedWeekDates.Item2)
+                        currentWeekDay = selectedWeekDates.Item1;
+                }
+                if (count == 5)
+                {
+                    ScheduleFallbackLesson(schedule, subject, selectedWeekDates);
+                    Amounts[i] = Amounts[i] - 1;
+                    i++;
+                    if (i >= Subjects.Count())
+                        i = 0;
+                    int c = 0;
+                    while (Amounts[i] <= 0)
+                    {
+                        i++;
+                        if (i >= Subjects.Count())
+                            i = 0;
+                        c++;
+                        if (c >= Subjects.Count())
+                            break;
+                    }
+                    if (currentWeekDay > selectedWeekDates.Item2)
+                        currentWeekDay = selectedWeekDates.Item1;
+                    else currentWeekDay = currentWeekDay.AddDays(1);
+                    if (currentWeekDay.DayOfWeek == DayOfWeek.Sunday)
+                        currentWeekDay = currentWeekDay.AddDays(1);
+                    else if (currentWeekDay.DayOfWeek == DayOfWeek.Saturday)
+                    {
+                        currentWeekDay = currentWeekDay.AddDays(2);
+                    }
+                    if (currentWeekDay > selectedWeekDates.Item2)
+                        currentWeekDay = selectedWeekDates.Item1;
+                    added = true;
+                    count = 0;
+                }
+            }
+
+            //Console.WriteLine("errrrrrrrrrrrr");
+
+            _context.SaveChanges();
+        }
+
+        public void ScheduleFallbackLesson(Schedule schedule, string subjects, Tuple<DateTime, DateTime> selectedWeekDates)
+        {
+            var timeSlots = new TimeSpan[]
+            {
+                new TimeSpan(8, 0, 0),
+                new TimeSpan(8, 55, 0),
+                new TimeSpan(9, 50, 0),
+                new TimeSpan(10, 35, 0),
+                new TimeSpan(12, 00, 0),
+                new TimeSpan(12, 45, 0)
+            };
+
+            // Identifying working days in the selected week
+            List<DateTime> workingDays = Enumerable.Range(0, (selectedWeekDates.Item2 - selectedWeekDates.Item1).Days)
+                                                    .Select(day => selectedWeekDates.Item1.AddDays(day))
+                                                    .Where(date => date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday)
+                                                    .ToList();
+
+            // Get all existing SubjectTimes for the selected week
+            var subjectTimes = _context.SubjectTimes.Where(s => s.StartDate >= selectedWeekDates.Item1 && s.StartDate < selectedWeekDates.Item2).ToList();
+            bool added = false;
+            foreach (var day in workingDays)
+            {
+                foreach (var slot in timeSlots)
+                {
+                    DateTime startTime = day + slot;
+                    DateTime endTime = startTime.AddMinutes(45); // Assuming 45-minute lesson
+
+                    bool isTimeSlotOccupied = subjectTimes.Any(st => st.StartDate >= startTime && st.StartDate < endTime && st.FkSchedule == schedule.Id);
+
+                    if (!isTimeSlotOccupied)
+                    {
+                        var subject = subjects;
+                        var newSubjectTime = new SubjectTime
+                        {
+                            Type = 2,
+                            Descrtiption = subject,
+                            FkSchedule = schedule.Id,
+                            FkSubject = subject,
+                            StartDate = startTime,
+                            EndDate = endTime
+                        };
+                        _context.SubjectTimes.Add(newSubjectTime);
+                        added = true;
+                        break;
+                    }
+                }
+                if (added)
+                    break;
+            }
+
+            _context.SaveChanges();
+        }
+
+
+
 
         public IActionResult GenerateSchedule()
         {
 
             var subjects = _context.Subjects.ToList();
             var classes = _context.Classes.ToList();
-            ViewBag.classes = classes; 
+            var classrooms = _context.Classrooms.ToList();
+            ViewBag.classes = classes;
+            ViewBag.classrooms = classrooms;
             return View(subjects);
         }
 
@@ -281,7 +505,7 @@ namespace EBookMark_ISP.Controllers
             }
             else
             {
-                if (!CheckIfClassRoomIsAvailable(model) || !CheckIfTimeSlotAvailable(model))
+                if (!CheckIfClassRoomIsAvailable(model) || !CheckIfTimeSlotAvailable(model) || !CheckIfOutsideSemester(model))
                 {
                     var subjectTime = _context.SubjectTimes.Find(model.Id);
                     var Classroom = _context.Classrooms.ToList();
@@ -339,11 +563,21 @@ namespace EBookMark_ISP.Controllers
             
             if (addWeeklyBool)
             {
+                if (!CheckForUpcomingWeeksOfSemester(subjectTime))
+                {
+                    var Classroom = _context.Classrooms.ToList();
+                    var subjects = _context.Subjects.ToList();
+                    var types = _context.SubjectTypes.ToList();
+                    ViewBag.Classrooms = Classroom;
+                    ViewBag.Subjects = subjects;
+                    ViewBag.Types = types;
+                    return View("AddLessonTime", scheduleId);
+                }
                 AddForAllSemestarWeeks(subjectTime);
             }
             else
             {
-                if (!CheckIfClassRoomIsAvailable(subjectTime) || !CheckIfTimeSlotAvailable(subjectTime))
+                if (!CheckIfClassRoomIsAvailable(subjectTime) || !CheckIfTimeSlotAvailable(subjectTime) || !CheckIfOutsideSemester(subjectTime))
                 {
 
                     var Classroom = _context.Classrooms.ToList();
@@ -480,6 +714,54 @@ namespace EBookMark_ISP.Controllers
             {
                 ModelState.AddModelError("", subjecTime.StartDate + " - " + subjecTime.EndDate + " Šiame laikotarpyje šiai klasei jau vyksta pamoka");
                 return false;
+            }
+            return true;
+        }
+
+        public bool CheckIfOutsideSemester(SubjectTime subjecTime)
+        {
+            Schedule schedule = _context.Schedules.Find(subjecTime.FkSchedule);
+            if (subjecTime.StartDate < schedule.SemesterStart || subjecTime.EndDate > schedule.SemesterEnd)
+            {
+                ModelState.AddModelError("", subjecTime.StartDate + " - " + subjecTime.EndDate + " Šis laikotarpis patenka už semestro ribų");
+                return false;
+            }
+            return true;
+        }
+
+        public bool CheckForUpcomingWeeksOfSemester(SubjectTime originalSubjectTime)
+        {
+            var schedule = _context.Schedules.Find(originalSubjectTime.FkSchedule);
+            DateTime startDate = originalSubjectTime.StartDate;
+            DateTime endDate = originalSubjectTime.EndDate;
+
+            while (startDate <= schedule.SemesterEnd)
+            {
+                if (startDate >= schedule.SemesterStart)
+                {
+                    SubjectTime newSubjectTime = new SubjectTime
+                    {
+                        StartDate = startDate,
+                        EndDate = endDate,
+                        Descrtiption = originalSubjectTime.Descrtiption,
+                        Type = originalSubjectTime.Type,
+                        FkSubject = originalSubjectTime.FkSubject,
+                        FkClassroom = originalSubjectTime.FkClassroom,
+                        FkSchedule = originalSubjectTime.FkSchedule
+                    };
+
+                    // Validate and add newSubjectTime
+                    if (!CheckIfClassRoomIsAvailable(newSubjectTime) || !CheckIfTimeSlotAvailable(newSubjectTime) || !CheckIfOutsideSemester(newSubjectTime))
+                    {
+                        return false;
+                    }
+
+
+                }
+
+                // Increment dates by 7 days
+                startDate = startDate.AddDays(7);
+                endDate = endDate.AddDays(7);
             }
             return true;
         }
