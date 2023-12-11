@@ -45,6 +45,9 @@
                          .Where(d => d >= DayOfWeek.Monday && d <= DayOfWeek.Friday).ToList();
 }
 
+@if (ViewBag.Access >= 5){
+    <a href="@Url.Action("Index", "Schedule")" class="btn btn-default">Return to Schedule List</a>
+}
 <h1>Weekly Schedule (@ViewBag.WeekStartDate.ToString("MM/dd/yyyy") to @ViewBag.WeekEndDate.ToString("MM/dd/yyyy"))</h1>
 
 <form asp-controller="Schedule" asp-action="WeeklySchedule" method="get">
