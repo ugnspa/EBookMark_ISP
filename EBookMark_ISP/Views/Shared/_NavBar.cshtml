@@ -9,13 +9,14 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarColor01">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link active" href="@Url.Action("Dashboard", "Home")">Home</a>
-                </li>
-            </ul>
+            
             @if (username != null)
             {
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="@Url.Action("Dashboard", "Home")">Home</a>
+                    </li>
+                </ul>
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
                     <li class="nav-item pe-3">
                         <span class="navbar-text text-white">
