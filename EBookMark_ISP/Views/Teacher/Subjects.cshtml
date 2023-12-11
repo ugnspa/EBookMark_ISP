@@ -2,6 +2,10 @@
 @{
     var currentDate = DateTime.Now;
     var currentSemesterKey = Model.ScheduleSubjects.Keys.FirstOrDefault(key => currentDate >= key.SemesterStart && currentDate <= key.SemesterEnd);
+    if (currentSemesterKey == null)
+    {
+        currentSemesterKey = Model.ScheduleSubjects.Keys.First();
+    }
 }
 <head>
     <link rel="stylesheet" href="~/css/tiles.css" asp-append-version="true" />

@@ -17,6 +17,7 @@ builder.Services.AddDbContext<EbookmarkContext>(options =>
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("AWS"));
 builder.Services.AddSingleton<IEmailService, EmailService>();
+builder.Services.AddHttpContextAccessor();
 
 
 var app = builder.Build();

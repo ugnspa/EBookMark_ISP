@@ -1,0 +1,38 @@
+﻿@model EBookMark_ISP.ViewModels.RankingViewModel
+
+<div class="ranking-details">
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Average</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var studentAvg in Model.ThreeBetween)
+            {
+                @if (studentAvg.Student != Model.student)
+                {
+                    <tr>
+                    <td >@studentAvg.rank</td>
+                    <td class="blur-name">@(new string('*', @studentAvg.Student.Name.Length)) @(new string('*', @studentAvg.Student.Surname.Length))</td>
+                    <td>@studentAvg.Average.ToString("0.##")</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr class="student-name">
+                    <td >@studentAvg.rank</td>
+                    <td >@studentAvg.Student.Name @studentAvg.Student.Surname</td>
+                    <td>@studentAvg.Average.ToString("0.##")</td>
+                    </tr>
+                }
+
+            }
+        </tbody>
+    </table>
+    <span class="ranking-label">Rank:</span> <span>@Model.ThreeBetween.FirstOrDefault(st => st.Student.FkUser == Model.student.FkUser).rank</span>
+    <span class="ranking-label">Out of:</span> <span>@Model.total</span>
+</div>
+
