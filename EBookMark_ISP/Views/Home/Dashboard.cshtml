@@ -31,7 +31,8 @@
 @{  
     if (permissions == 1)
     {
-        @Html.Partial("_Student")
+        @model EBookMark_ISP.ViewModels.FilterViewModel
+        @Html.Partial("_Student",Model)
     }
     else if(permissions == 5)
     {
