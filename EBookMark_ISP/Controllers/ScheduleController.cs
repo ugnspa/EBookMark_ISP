@@ -166,7 +166,7 @@ namespace EBookMark_ISP.Controllers
             }
             _context.Schedules.Add(schedule);
             _context.SaveChanges();
-
+            TempData["SuccessMessage"] = "Added successfully!";
             return RedirectToAction("EditSchedule", new { scheduleId = schedule.Id });
         }
 
@@ -222,7 +222,7 @@ namespace EBookMark_ISP.Controllers
 
 
 
-
+            TempData["SuccessMessage"] = "Generated successfully!";
             //for (DateTime i = semesterStart; i < semesterStart.AddDays(7); i = i.AddDays(1))
             //{
             //    for (DateTime j = i.AddHours(8); j < i.AddHours)
@@ -511,6 +511,7 @@ namespace EBookMark_ISP.Controllers
             //   .Include(s => s.SubjectTimes)
             //   .ThenInclude(st => st.FkSubjectNavigation)
             //   .SingleOrDefault(s => s.Id == model.Id);
+            TempData["SuccessMessage"] = "Updated successfully!";
             return RedirectToAction("EditSchedule", new { scheduleId = model.Id });
         }
 
@@ -544,6 +545,7 @@ namespace EBookMark_ISP.Controllers
                 _context.SubjectTimes.Remove(subjectTime);
             }
             _context.SaveChanges();
+            TempData["SuccessMessage"] = "Deleted successfully!";
             return RedirectToAction("EditSchedule", new { scheduleId = scheduleId });
         }
 
@@ -595,7 +597,7 @@ namespace EBookMark_ISP.Controllers
                 _context.Entry(model).State = EntityState.Modified;
                 _context.SaveChanges();
             }
-            
+            TempData["SuccessMessage"] = "Updated successfully!";
             return RedirectToAction("EditSchedule", new { scheduleId = scheduleId });
         }
 
@@ -674,6 +676,7 @@ namespace EBookMark_ISP.Controllers
                 _context.SubjectTimes.Add(subjectTime);
                 _context.SaveChanges();
             }
+            TempData["SuccessMessage"] = "Added successfully!";
             return RedirectToAction("EditSchedule", new { scheduleId = scheduleId });
         }
 
@@ -696,6 +699,7 @@ namespace EBookMark_ISP.Controllers
                 _context.Schedules.Remove(schedule);
             }
             _context.SaveChanges();
+            TempData["SuccessMessage"] = "Deleted successfully!";
             return RedirectToAction("index");
         }
 
@@ -745,6 +749,12 @@ namespace EBookMark_ISP.Controllers
                 if (startDate >= schedule.SemesterStart)
                 {
                     var newSubTime = _context.SubjectTimes.SingleOrDefault(s => s.StartDate == startDate && s.EndDate == endDate && s.FkSchedule == schedule.Id);
+                    if (originalSubjectTime.Id != 0)
+                    {
+                        newSubTime = _context.SubjectTimes.SingleOrDefault(s => s.StartDate == startDate && s.EndDate == endDate && s.FkSchedule == schedule.Id && originalSubjectTime.Id != s.Id);
+                    }
+                    
+                    
                     if (newSubTime != null)
                     {
                         newSubTime.StartDate = startDate;
@@ -786,7 +796,7 @@ namespace EBookMark_ISP.Controllers
         {
             if (subjecTime.FkClassroom == null)
                 return true;
-            var subjectsTimes = _context.SubjectTimes.Where(s => !(s.StartDate > subjecTime.EndDate || s.EndDate < subjecTime.StartDate)
+            var subjectsTimes = _context.SubjectTimes.Where(s => s.StartDate >= subjecTime.StartDate && s.StartDate < subjecTime.EndDate
             && s.FkClassroom == subjecTime.FkClassroom && s.Id != subjecTime.Id).ToList();
             if (subjectsTimes.Any())
             {
