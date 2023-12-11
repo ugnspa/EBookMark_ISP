@@ -4,7 +4,9 @@ using EBookMark_ISP.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using NuGet.DependencyResolver;
 using System.Drawing.Printing;
+using System.Linq;
 using System.Text;
 
 namespace EBookMark_ISP.Controllers
@@ -32,10 +34,32 @@ namespace EBookMark_ISP.Controllers
                     //Schedule fullSchedule2 = CreateFullSchedule(2);
                     //List<Schedule> list = new List<Schedule> { fullSchedule, fullSchedule2 };
                     //var schedules = _context.Users.Where(u => u.Admin != null).ToList();
-                    var schedules = _context.Schedules.Include(s => s.FkClassNavigation).OrderBy(s => s.SemesterStart).ThenBy(s => s.FkClassNavigation.Name).
+                    if (access == 5)
+                    {
+                        var teacher = _context.Users.FirstOrDefault(t => t.Username == username);
+                        var teacher_schedules = _context.Subjects
+                                          .Where(s => s.FkTeacher == teacher.Id)
+                                          .SelectMany(s => s.SubjectTimes)
+                                          .Select(st => st.FkSchedule)
+                                          .Distinct()
+                                          .ToList();
+                        var schedules = _context.Schedules
+                            .Where(s => teacher_schedules.Contains(s.Id))
+                            .Include(s => s.FkClassNavigation)
+                            .OrderBy(s => s.SemesterStart)
+                            .ThenBy(s => s.FkClassNavigation.Name)
+                            .ToList();
+
+                        ViewBag.Permissions = access;
+                        return View("ScheduleList", schedules);
+                    }
+                    else
+                    {
+                        var schedules = _context.Schedules.Include(s => s.FkClassNavigation).OrderBy(s => s.SemesterStart).ThenBy(s => s.FkClassNavigation.Name).
                         ToList();
-                    ViewBag.Permissions = access;
-                    return View("ScheduleList", schedules);
+                        ViewBag.Permissions = access;
+                        return View("ScheduleList", schedules);
+                    }
                 }
                 return RedirectToAction("WeeklySchedule");
             }
@@ -75,6 +99,7 @@ namespace EBookMark_ISP.Controllers
             ViewBag.SelectedWeek = selectedWeek;
             ViewBag.ScheduleId = fullSchedule.Id;
             ViewBag.WeekDropdown = GenerateWeekDropdown(totalWeeks, selectedWeek, fullSchedule.SemesterStart);
+            ViewBag.Access = HttpContext.Session.GetInt32("Permissions");
 
             // Assuming you have a view that takes a single Schedule object and displays it weekly
             return View("Schedule", lessonsForSelectedWeek);
@@ -108,12 +133,20 @@ namespace EBookMark_ISP.Controllers
 
         public IActionResult CreateSchedule()
         {
+            if (HttpContext.Session.GetInt32("Permissions") != 10)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
             var classes = _context.Classes.ToList();
             return View("CreateSchedule", classes);
         }
 
         public IActionResult AddSchedule(int ClassId, DateTime SemestarStart, DateTime SemestarEnd)
         {
+            if (HttpContext.Session.GetInt32("Permissions") != 10)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
             var schedule = new Schedule
             {
                 SemesterStart = SemestarStart,
@@ -140,13 +173,23 @@ namespace EBookMark_ISP.Controllers
         [HttpPost]
         public IActionResult GenerateAndAddSchedule(DateTime semesterStart, DateTime semesterEnd, string className, List<string> Subjects, List<int> Amounts, List<string> ClassroomTypes)
         {
+            if (HttpContext.Session.GetInt32("Permissions") != 10)
+            {
+
+                return RedirectToAction("Dashboard", "Home");
+            }
             //validation
             //lesson length = 45min
 
             if (Amounts.Sum() > 30)
             {
                 ModelState.AddModelError("", "Savaitei nurodyta per daug pamoku");
-                //per daug pamoku
+                var subjects = _context.Subjects.ToList();
+                var classes = _context.Classes.ToList();
+                var classrooms = _context.Classrooms.ToList();
+                ViewBag.classes = classes;
+                ViewBag.classrooms = classrooms;
+                return View("GenerateSchedule", subjects);
             }
             var schedule = new Schedule
             {
@@ -155,12 +198,19 @@ namespace EBookMark_ISP.Controllers
                 //className has code value
                 FkClass = className.ToString()
             };
-            _context.Schedules.Add(schedule);
-            _context.SaveChanges();
+           
             if (!ValidateSchedule(schedule))
             {
                 ModelState.AddModelError("", "Nurodytame semestro laikotarpyje jau egzistuoja tvarkaraštis šiai klasei");
+                var subjects = _context.Subjects.ToList();
+                var classes = _context.Classes.ToList();
+                var classrooms = _context.Classrooms.ToList();
+                ViewBag.classes = classes;
+                ViewBag.classrooms = classrooms;
+                return View("GenerateSchedule", subjects);
             }
+            _context.Schedules.Add(schedule);
+            _context.SaveChanges();
 
 
             var totalWeeks = CalculateTotalWeeks(schedule.SemesterStart, schedule.SemesterEnd);
@@ -189,6 +239,7 @@ namespace EBookMark_ISP.Controllers
 
         public void generateWeeklySchedule(Schedule schedule, List<string> Subjects, List<int> Amounts, List<string> ClassroomTypes, Tuple<DateTime, DateTime> selectedWeekDates)
         {
+            
             int classSize = _context.Classes.Find(schedule.FkClass).StudentsCount;
             var classrooms = _context.Classrooms.Where(c => c.Capacity >= classSize).ToList();
             var subjectTimes = _context.SubjectTimes.Where(s => s.StartDate >= selectedWeekDates.Item1 && s.StartDate < selectedWeekDates.Item2).ToList();
@@ -299,7 +350,7 @@ namespace EBookMark_ISP.Controllers
                 }
                 if (count == 5)
                 {
-                    ScheduleFallbackLesson(schedule, subject, selectedWeekDates);
+                    ScheduleFallbackLesson(schedule, subject, selectedWeekDates, subjectTimes);
                     Amounts[i] = Amounts[i] - 1;
                     i++;
                     if (i >= Subjects.Count())
@@ -335,8 +386,9 @@ namespace EBookMark_ISP.Controllers
             _context.SaveChanges();
         }
 
-        public void ScheduleFallbackLesson(Schedule schedule, string subjects, Tuple<DateTime, DateTime> selectedWeekDates)
+        public void ScheduleFallbackLesson(Schedule schedule, string subjects, Tuple<DateTime, DateTime> selectedWeekDates, List<SubjectTime> subjectTimesfull)
         {
+            
             var timeSlots = new TimeSpan[]
             {
                 new TimeSpan(8, 0, 0),
@@ -354,7 +406,7 @@ namespace EBookMark_ISP.Controllers
                                                     .ToList();
 
             // Get all existing SubjectTimes for the selected week
-            var subjectTimes = _context.SubjectTimes.Where(s => s.StartDate >= selectedWeekDates.Item1 && s.StartDate < selectedWeekDates.Item2).ToList();
+            var subjectTimes = subjectTimesfull.Where(s => s.StartDate >= selectedWeekDates.Item1 && s.StartDate < selectedWeekDates.Item2).ToList();
             bool added = false;
             foreach (var day in workingDays)
             {
@@ -394,7 +446,10 @@ namespace EBookMark_ISP.Controllers
 
         public IActionResult GenerateSchedule()
         {
-
+            if (HttpContext.Session.GetInt32("Permissions") != 10)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
             var subjects = _context.Subjects.ToList();
             var classes = _context.Classes.ToList();
             var classrooms = _context.Classrooms.ToList();
@@ -405,6 +460,10 @@ namespace EBookMark_ISP.Controllers
 
         public IActionResult EditSchedule(int scheduleId)
         {
+            if (HttpContext.Session.GetInt32("Permissions") != 10)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
             Schedule fullSchedule = _context.Schedules
                 .Include(s => s.FkClassNavigation)
                 .Include(s => s.SubjectTimes)
@@ -422,6 +481,10 @@ namespace EBookMark_ISP.Controllers
         //[HttpPost]
         public IActionResult UpdateSchedule(Schedule model, DateTime SemestarStart, DateTime SemestarEnd, string ClassId)
         {
+            if (HttpContext.Session.GetInt32("Permissions") != 10)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
             model.SemesterStart = SemestarStart;
             model.SemesterEnd = SemestarEnd;
             model.FkClass = ClassId;
@@ -453,6 +516,10 @@ namespace EBookMark_ISP.Controllers
 
         public IActionResult EditLessonTime(int scheduleId, int LessonTimeid)
         {
+            if (HttpContext.Session.GetInt32("Permissions") != 10)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
             var subjectTime = _context.SubjectTimes.Find(LessonTimeid);
             var Classroom = _context.Classrooms.ToList();
             var subjects = _context.Subjects.ToList();
@@ -467,6 +534,10 @@ namespace EBookMark_ISP.Controllers
 
         public IActionResult DeleteLessonTime(int LessonTimeid, int scheduleId)
         {
+            if (HttpContext.Session.GetInt32("Permissions") != 10)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
             var subjectTime = _context.SubjectTimes.Find(LessonTimeid);
             if (subjectTime != null)
             {
@@ -479,6 +550,10 @@ namespace EBookMark_ISP.Controllers
         public IActionResult UpdateLessonTime(SubjectTime model, DateTime Start, DateTime End, string Description, int SubjectTypeId,
             string SubjectId, int classroomId, int scheduleId, string AddWeekly)
         {
+            if (HttpContext.Session.GetInt32("Permissions") != 10)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
             bool addWeeklyBool = AddWeekly?.ToLower() == "true";
 
             model.StartDate = Start;
@@ -526,6 +601,10 @@ namespace EBookMark_ISP.Controllers
 
         public IActionResult AddLessonTime(int scheduleId)
         {
+            if (HttpContext.Session.GetInt32("Permissions") != 10)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
             var Classroom = _context.Classrooms.ToList();
             var subjects = _context.Subjects.ToList();
             var types = _context.SubjectTypes.ToList();
@@ -544,6 +623,10 @@ namespace EBookMark_ISP.Controllers
         public IActionResult CreateLessonTime(DateTime Start, DateTime End, string Description, int SubjectTypeId, string SubjectId, int classroomId,
     int scheduleId, string AddWeekly)
         {
+            if (HttpContext.Session.GetInt32("Permissions") != 10)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
             bool addWeeklyBool = AddWeekly?.ToLower() == "true";
 
             SubjectTime subjectTime = new SubjectTime
@@ -598,6 +681,10 @@ namespace EBookMark_ISP.Controllers
 
         public IActionResult DeleteSchedule(int scheduleId)
         {
+            if (HttpContext.Session.GetInt32("Permissions") != 10)
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
             var schedule = _context.Schedules.Find(scheduleId);
             if (schedule != null)
             {
@@ -614,6 +701,7 @@ namespace EBookMark_ISP.Controllers
 
         public void AddForAllSemestarWeeks(SubjectTime originalSubjectTime)
         {
+            
             var schedule = _context.Schedules.Find(originalSubjectTime.FkSchedule);
             DateTime startDate = originalSubjectTime.StartDate;
             DateTime endDate = originalSubjectTime.EndDate;
@@ -647,6 +735,7 @@ namespace EBookMark_ISP.Controllers
 
         public void UpdateForAllSemestarWeeks(SubjectTime originalSubjectTime)
         {
+            
             var schedule = _context.Schedules.Find(originalSubjectTime.FkSchedule);
             DateTime startDate = originalSubjectTime.StartDate;
             DateTime endDate = originalSubjectTime.EndDate;
@@ -731,6 +820,7 @@ namespace EBookMark_ISP.Controllers
 
         public bool CheckForUpcomingWeeksOfSemester(SubjectTime originalSubjectTime)
         {
+
             var schedule = _context.Schedules.Find(originalSubjectTime.FkSchedule);
             DateTime startDate = originalSubjectTime.StartDate;
             DateTime endDate = originalSubjectTime.EndDate;
