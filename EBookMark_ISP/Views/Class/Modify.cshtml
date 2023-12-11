@@ -1,6 +1,10 @@
 ﻿<!DOCTYPE html>
 <html>
+
 <head>
+    @Html.Partial("_Alert")
+
+    
     <title>Modify Class</title>
     <style>
         #table {
@@ -42,7 +46,14 @@
 
 
 <body>
-    <h1>Modify Class</h1>
+
+    <h1>
+        Modify Class
+    </h1>
+    <div style="text-align: right;">
+        <a href="@Url.Action("Index", "Class")" class="btn btn-primary">Back to class list</a>
+    </div>
+    
 
     <!-- Form to modify class -->
     <form action=Modify method="post">
@@ -141,6 +152,13 @@
         </tbody>
     </table>
     }
+
+    @*@if (ViewBag.Message != null)
+    {
+        <script>
+            alert("@ViewBag.Message");
+        </script>
+    }*@
     
 </body>
 </html>

@@ -21,7 +21,7 @@ namespace EBookMark_ISP.Controllers
         {
             string username = HttpContext.Session.GetString("Username");
             int? permissions = HttpContext.Session.GetInt32("Permissions");
-            if (username == null || permissions == null)
+            if (username == null || permissions == null || permissions < 5)
             {
                 return RedirectToAction("Dashboard", "Home");
             }
@@ -63,11 +63,12 @@ namespace EBookMark_ISP.Controllers
         {
             string username = HttpContext.Session.GetString("Username");
             int? permissions = HttpContext.Session.GetInt32("Permissions");
-            if (username == null)
+            if (username == null || permissions == null)
             {
                 return RedirectToAction("Dashboard", "Home");
             }
 
+            ViewBag.Permissions = permissions;
 
             if(permissions == 1)
             {
@@ -185,6 +186,14 @@ namespace EBookMark_ISP.Controllers
                 return RedirectToAction("Dashboard", "Home");
             }
 
+            string message = HttpContext.Session.GetString("Message");
+
+            if(message != null)
+            {
+                HttpContext.Session.Remove("Message");
+                ViewBag.Message = message;
+            }
+
 
             Class filteredClass = _context.Classes.Include(c => c.FkSchoolNavigation).Where(c => c.Code == code).FirstOrDefault();
 
@@ -254,9 +263,18 @@ namespace EBookMark_ISP.Controllers
             Student student = _context.Students.FirstOrDefault(s => s.FkUser == studentId);
             if(student != null)
             {
-                _context.Classes.FirstOrDefault(c => c.Code == classCode).StudentsCount++;
-                student.FkClass = classCode;
-                _context.SaveChanges();
+                try
+                {
+                    _context.Classes.FirstOrDefault(c => c.Code == classCode).StudentsCount++;
+                    student.FkClass = classCode;
+                    _context.SaveChanges();
+                    HttpContext.Session.SetString("Message", "Student added to class successfully");
+                }
+                catch
+                {
+                    HttpContext.Session.SetString("Message", "Could not add student to class");
+                }
+                
             }
 
             return RedirectToAction("Modify", "Class", new {code = classCode});
