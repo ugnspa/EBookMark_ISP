@@ -1,6 +1,7 @@
 ﻿using EBookMark_ISP.Models;
 using EBookMark_ISP.Services;
 using EBookMark_ISP.ViewModels;
+using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -517,12 +518,24 @@ namespace EBookMark_ISP.Controllers
         {
             string username = (name.Substring(0, 3) + surname.Substring(0, 3)).ToLower();
 
-            List<User> users = _context.Users.Where(u => u.Username.StartsWith(username)).ToList();
+            List<User> users = _context.Users.Where(u => u.Username.StartsWith(username)).OrderBy(u => username).ToList();
 
             if (users.Count == 0)
                 return username;
 
-            username = username + users.Count().ToString();
+            foreach(User u in users)
+            {
+                Console.WriteLine($"Username: {u.Username} number {u.Username.Remove(0, username.Length)}");
+            }
+
+            User lastUser = users.Last();
+
+            int lastUserNumber;
+
+            Int32.TryParse(lastUser.Username.Remove(0, username.Length), out lastUserNumber);
+
+            lastUserNumber++;
+            username = username + lastUserNumber.ToString();
 
             return username;
         }
