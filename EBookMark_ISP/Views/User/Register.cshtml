@@ -84,16 +84,15 @@
 
 
     <div class="row">
-
-       
-
         <div class="col-md-6 offset-md-3">
             <h2>Register user</h2>
-            
+            <div style="text-align: right;">
+                <a href="@Url.Action("UserList", "User")" class="btn btn-primary">Back to user list</a>
+            </div>
             <br>
 
             @{
-                var errorMessage = ViewData["ErrorMessage"] as string;
+                var errorMessage = ViewData["Message"] as string;
                 if (!string.IsNullOrEmpty(errorMessage))
                 {
                     <center><p style="color: red">Registration failed: @errorMessage</p></center>
