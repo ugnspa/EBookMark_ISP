@@ -44,10 +44,41 @@
     z-index: 100;
     width: 200px;
     border-radius:5px;
+    font-weight: normal;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-/* Show the popup when hovering over the cell */
 td:hover .mark-popup {
     display: block;
 }
+.mark-popup2 {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    border: 1px solid #dcdcdc;
+    padding: 5px;
+    z-index: 100;
+    width: 200px;
+    border-radius: 5px;
+    font-weight: normal;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+.double-mark{
+    text-decoration:none;
+    color:black;
+    font-weight:bold;
+}
+.double-mark:hover{
+    color:black;
+}
+
+a:hover .mark-popup2{
+    display:block;
+}
+.double-mark2 {
+    color: black;
+}
+    .double-mark2:hover .mark-popup2 {
+        display: block;
+    }
+

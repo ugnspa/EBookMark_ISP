@@ -209,18 +209,28 @@ namespace EBookMark_ISP.Controllers
         }
 
         [HttpGet]
-        public IActionResult EditMark(string name, string mark, string subject, string day)
+        public IActionResult EditMark(int mark_id, int schedule_id, string subject_code)
         {
             if (!AccessTeacher())
             {
                 return RedirectToAction("Dashboard", "Home");
             }
+            Mark mark = _context.Marks.FirstOrDefault(m => m.Id == mark_id);
+            var studentMarksSt = _context.Marks
+                .Where(m => m.FkStudent == mark.FkStudent && m.Id != mark_id)
+                .Select(m => m.FkSubjectTime)
+                .ToList();
+
+            var subjectTimes = _context.SubjectTimes
+                .Where(st => st.FkSubject == subject_code && st.FkSchedule == schedule_id && !studentMarksSt.Contains(st.Id))
+                .ToList();
+
             var viewModel = new EditMarkViewModel
             {
-                Name = name,
-                Subject = subject,
-                Day = day,
-                Mark = mark
+                subject = subject_code,
+                student = _context.Students.FirstOrDefault(m => m.FkUser == mark.FkStudent),
+                Mark = mark,
+                SubjectTimes = subjectTimes
             };
 
             return View(viewModel);
@@ -233,12 +243,48 @@ namespace EBookMark_ISP.Controllers
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-            if (ModelState.IsValid)
+            try
             {
-                return RedirectToAction("GradeBook", "User", new { name = viewModel.Name });
+                var markToUpdate = _context.Marks.FirstOrDefault(m => m.Id == viewModel.Mark.Id);
+                markToUpdate.Mark1 = viewModel.Mark.Mark1;
+                markToUpdate.Comment = viewModel.Mark.Comment;
+                markToUpdate.FkSubjectTime = viewModel.Mark.FkSubjectTime;
+                markToUpdate.RegistrationDate = DateTime.Now;
+
+                _context.SaveChanges();
+                HttpContext.Session.SetString("Message", "Mark Has Been Updated Successfully");
+
+            }
+            catch
+            {
+                HttpContext.Session.SetString("Message", "Error Occurred While Updating The Mark");
+                return RedirectToAction("GradeBook", "User", new { student_id = viewModel.Mark.FkStudent });
             }
 
-            return RedirectToAction("Dashboard", "Home");
+            return RedirectToAction("GradeBook", "User", new { student_id = viewModel.Mark.FkStudent });
+        }
+
+        [HttpPost]
+        public IActionResult DeleteMark(int mark_id, int student_id)
+        {
+            if (!AccessTeacher())
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+
+            try
+            {
+                _context.Marks.Remove(_context.Marks.Find(mark_id));
+                _context.SaveChanges();
+                HttpContext.Session.SetString("Message", "Mark Has Been Deleted Successfully");
+            }
+            catch
+            {
+                HttpContext.Session.SetString("Message", "Error Occurred While Deleting The Mark");
+                return RedirectToAction("GradeBook", "User", new { student_id = student_id });
+            }
+
+            return RedirectToAction("GradeBook", "User", new { student_id = student_id });
         }
 
 
