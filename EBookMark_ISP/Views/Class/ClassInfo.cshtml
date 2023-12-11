@@ -34,12 +34,13 @@
 <body>
     <div>
         <h1>Class information</h1>
-@*        @if (ViewBag.Permissions >= 9)
+        @if (ViewBag.Permissions >= 5)
         {
             <div style="text-align: right;">
-                <a href="@Url.Action("Create", "Class")" class="btn btn-success">Create Class</a>
+                <a href="@Url.Action("Index", "Class")" class="btn btn-primary">Back to class list</a>
             </div>
-        }*@
+            <br><br>
+        }
 
     </div>
 

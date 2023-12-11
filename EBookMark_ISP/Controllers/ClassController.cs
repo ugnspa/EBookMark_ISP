@@ -21,7 +21,7 @@ namespace EBookMark_ISP.Controllers
         {
             string username = HttpContext.Session.GetString("Username");
             int? permissions = HttpContext.Session.GetInt32("Permissions");
-            if (username == null || permissions == null)
+            if (username == null || permissions == null || permissions < 5)
             {
                 return RedirectToAction("Dashboard", "Home");
             }
@@ -63,11 +63,12 @@ namespace EBookMark_ISP.Controllers
         {
             string username = HttpContext.Session.GetString("Username");
             int? permissions = HttpContext.Session.GetInt32("Permissions");
-            if (username == null)
+            if (username == null || permissions == null)
             {
                 return RedirectToAction("Dashboard", "Home");
             }
 
+            ViewBag.Permissions = permissions;
 
             if(permissions == 1)
             {
