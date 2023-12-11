@@ -1,6 +1,8 @@
 ﻿<!DOCTYPE html>
 <html>
+
 <head>
+    @Html.Partial("_Alert")
     <title>Modify Class</title>
     <style>
         #table {
@@ -43,6 +45,8 @@
 
 <body>
     <h1>Modify Class</h1>
+
+    
 
     <!-- Form to modify class -->
     <form action=Modify method="post">
@@ -141,6 +145,13 @@
         </tbody>
     </table>
     }
+
+    @*@if (ViewBag.Message != null)
+    {
+        <script>
+            alert("@ViewBag.Message");
+        </script>
+    }*@
     
 </body>
 </html>
