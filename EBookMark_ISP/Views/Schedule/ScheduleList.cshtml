@@ -7,6 +7,12 @@
         <a asp-controller="Schedule" asp-action="CreateSchedule" class="btn btn-primary">Create Schedule</a>
         <a asp-controller="Schedule" asp-action="GenerateSchedule" class="btn btn-primary">Generate Schedule</a>
     </div>
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
 }
 
 
