@@ -1,39 +1,71 @@
 ﻿@using EBookMark_ISP.ViewModels
+@using EBookMark_ISP.Models
 @model EditMarkViewModel
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-6 offset-md-3">
-            <div class="card">
-                <div class="card-header">
-                    <h3>Edit Mark for @Model.Name @Model.Subject Day - @Model.Day</h3>
-                </div>
-                <div class="card-body">
-                    <form asp-action="EditMark" method="post" class="form-horizontal">
-                        <input type="hidden" asp-for="Name" />
-                        <input type="hidden" asp-for="Subject" />
-                        <input type="hidden" asp-for="Day" />
 
-                        <div class="form-group">
-                            <label asp-for="Mark" class="control-label">Mark:</label>
-                            <input asp-for="Mark" class="form-control" />
-                            <span asp-validation-for="Mark" class="text-danger"></span>
-                        </div>
+<div class="container text-center pb-5 mt-5">
+    <h2>Student - @Model.student.Name @Model.student.Surname </h2>
+    <h2>Subject - @Model.subject</h2>
 
-                        <div class="form-group">
-                            <input type="submit" value="Save" class="btn btn-primary" />
-                        </div>
-                    </form>
-                </div>
+    <form asp-controller="Teacher" asp-action="EditMark" method="post" class="mt-4">
+        <input asp-for="@Model.Mark.Id" type="hidden" value="@Model.Mark.Id" />
+        <input asp-for="@Model.Mark.FkStudent" type="hidden"  value="@Model.Mark.FkStudent" />
+
+        <div class="form-group">
+
+            <div class="form-group col-md-6 offset-md-3">
+                <label for="mark">Mark</label>
+                <select asp-for="@Model.Mark.Mark1" class="form-control">
+                    @for(int i = 1; i <= 10; i++)
+                    {
+                        <option style="text-align:center" value="@i">@i</option>
+                    }
+                    <option style="text-align: center;" value="n">n</option>
+                </select>
+            </div>
+
+            <div class="form-group col-md-6 offset-md-3">
+                <label for="subject_time_id">Subject time:</label>
+                <select asp-for="@Model.Mark.FkSubjectTime" class="form-control">
+                    @foreach (var item in Model.SubjectTimes)
+                    {
+                            <option style="text-align: center;" value="@item.Id">@item.StartDate - @item.EndDate</option>
+                    }
+                </select>
             </div>
         </div>
-    </div>
-</div>
-<div class="col-md-4 mb-3">
-    <a class="btn btn-primary btn-lg" asp-controller="User" asp-action="GradeBook" asp-route-name="@Model.Name">Back to GradeBook</a>
+
+
+
+        <div class="form-group col-md-6 offset-md-3">
+            <label for="Comment">Comment</label>
+            <textarea asp-for="@Model.Mark.Comment" class="form-control">@Model.Mark.Comment</textarea>
+        </div>
+
+        <div class="row align-items-start mt-2" >
+            <div class="offset-md-3 col-md-2">
+                <a class="btn btn-primary " asp-controller="User" asp-action="Gradebook" asp-route-student_id="@Model.student.FkUser">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5" />
+                    </svg>
+                    Student Page
+                </a>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+            
+
+    </form>
+            <div class="col-md-2">
+                <form asp-controller="Teacher" asp-action="DeleteMark" method="post">
+                    <input type="hidden" name="mark_id" value="@Model.Mark.Id" />
+                    <input type="hidden" name="student_id" value="@Model.student.FkUser" />
+                    <button type="submit" class="btn btn-danger">Delete Mark</button>
+                </form>
+            </div>
+        </div>
 </div>
 
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}
+
+
+

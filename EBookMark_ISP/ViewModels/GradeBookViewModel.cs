@@ -3,6 +3,7 @@ namespace EBookMark_ISP.ViewModels
 {
     public class GradeBookViewModel
     {
+        public List<string> teachers_subject { get; set; }
         public Student student { get; set; }
         public Dictionary<Schedule, List<SubjectMarks>> schedules { get; set;}
 

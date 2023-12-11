@@ -11,7 +11,7 @@
 
     <div>
         <label for="semesterStart">Semester Start:</label>
-        <input type="date" id="semesterStart" name="SemestarStart" value="@Model.SemesterStart.ToString("yyyy-MM-dd")" required />
+        <input type="date" id="semesterStart" name="SemestarStart" value="@Model.SemesterStart.ToString("yyyy-MM-dd")" required onchange="updateMinimumSemesterEndDate()" />
     </div>
 
     <div>
@@ -24,7 +24,11 @@
         <select id="ClassName" name="ClassId" class="form-control" required>
             @foreach (Class c in ViewBag.classes) 
             {
-                <option value="@c.Code">@c.Name</option>
+                var optionTag = Model.FkClass == c.Code ?
+                $"<option value=\"{c.Code}\" selected>{c.Name}</option>" :
+                $"<option value=\"{c.Code}\">{c.Name}</option>";
+
+                @Html.Raw(optionTag)
             }
         </select>
     </div>
@@ -61,8 +65,12 @@
     
 <a href="@Url.Action("Index", "Schedule")" class="btn btn-default">Return to Schedule List</a>
 <script>
-function confirmDeletion(subjectName, startDate) {
-    var message = "Are you sure you want to delete the lesson for '" + subjectName + "' starting on " + startDate + "?";
-    return confirm(message);
-}
+    function updateMinimumSemesterEndDate() {
+        var semesterStartDate = document.getElementById('semesterStart').value;
+        document.getElementById('semesterEnd').setAttribute('min', semesterStartDate);
+    }
+    function confirmDeletion(subjectName, startDate) {
+        var message = "Are you sure you want to delete the lesson for '" + subjectName + "' starting on " + startDate + "?";
+        return confirm(message);
+    }
 </script>

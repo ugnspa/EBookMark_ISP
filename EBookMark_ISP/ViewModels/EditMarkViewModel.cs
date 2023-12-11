@@ -1,10 +1,12 @@
-﻿namespace EBookMark_ISP.ViewModels
+﻿using EBookMark_ISP.Models;
+
+namespace EBookMark_ISP.ViewModels
 {
     public class EditMarkViewModel
     {
-        public string Name { get; set; }
-        public string Subject { get; set; }
-        public string Day { get; set; }
-        public string Mark { get; set; }
+        public string subject { get; set; }
+        public Student student { get; set; }
+        public Mark Mark { get; set; }
+        public List<SubjectTime> SubjectTimes { get; set; }
     }
 }

@@ -59,3 +59,61 @@
 .back-button{
     padding-top:2rem;
 }
+
+.ranking {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.ranking-details {
+
+    border-radius: 4px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+    .ranking-details table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .ranking-details td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+
+    .ranking-details tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .ranking-details tr:hover {
+        background-color: #ddd;
+    }
+
+.ranking-label {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+    .ranking-label + span {
+        display: inline-block;
+        min-width: 50px;
+        text-align: left;
+    }
+
+.blur-name{
+    filter: blur(3px);
+}
+
+.student-name{
+    font-weight:bold;
+}
