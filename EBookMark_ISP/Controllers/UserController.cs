@@ -48,7 +48,6 @@ namespace EBookMark_ISP.Controllers
             }
             if (!(permissions != 5 || permissions != 1))
             {
-                Console.WriteLine(permissions);
                 return false;
             }
             return true;
@@ -292,7 +291,6 @@ namespace EBookMark_ISP.Controllers
 
             if(users.Count > 0)
             {
-                Console.WriteLine("USERNAME TAKEN");
                 HttpContext.Session.SetString("AdminError", "This username is already taken");
                 return RedirectToAction("Register");
             }
@@ -322,12 +320,6 @@ namespace EBookMark_ISP.Controllers
             {
                 return RedirectToAction("Dashboard", "Home");
             }
-
-            Console.WriteLine("Remove user:");
-            Console.WriteLine($"id: {id}");
-            Console.WriteLine($"type: {type}");
-
-            //List<Student> classStudents = _context.Students.Where(s => s.FkClass == code).ToList();
 
             switch (type)
             {
@@ -523,10 +515,6 @@ namespace EBookMark_ISP.Controllers
             if (users.Count == 0)
                 return username;
 
-            foreach(User u in users)
-            {
-                Console.WriteLine($"Username: {u.Username} number {u.Username.Remove(0, username.Length)}");
-            }
 
             User lastUser = users.Last();
 
