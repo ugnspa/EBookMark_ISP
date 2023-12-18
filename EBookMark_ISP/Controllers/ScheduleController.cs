@@ -141,7 +141,7 @@ namespace EBookMark_ISP.Controllers
             return View("CreateSchedule", classes);
         }
 
-        public IActionResult AddSchedule(int ClassId, DateTime SemestarStart, DateTime SemestarEnd)
+        public IActionResult AddSchedule(string ClassId, DateTime SemestarStart, DateTime SemestarEnd)
         {
             if (HttpContext.Session.GetInt32("Permissions") != 10)
             {

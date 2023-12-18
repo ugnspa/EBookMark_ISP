@@ -269,16 +269,18 @@ namespace EBookMark_ISP.Controllers
                     student.FkClass = classCode;
                     _context.SaveChanges();
                     HttpContext.Session.SetString("Message", "Student added to class successfully");
-                }
+					return RedirectToAction("Modify", "Class", new { code = classCode });
+				}
                 catch
                 {
                     HttpContext.Session.SetString("Message", "Could not add student to class");
-                }
+					return RedirectToAction("Modify", "Class", new { code = classCode });
+				}
                 
             }
+			return RedirectToAction("Modify", "Class", new { code = classCode });
 
-            return RedirectToAction("Modify", "Class", new {code = classCode});
-        }
+		}
 
         [HttpGet]
         public IActionResult RemoveStudentFromClass(string classCode, int studentId)
