@@ -1,23 +1,36 @@
-﻿<nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+﻿@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var username = HttpContextAccessor.HttpContext.Session.GetString("Username");
+}
+<nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
     <div class="container-fluid">
         <a class="navbar-brand">E-GradeBook</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarColor01">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link active" href="@Url.Action("Dashboard", "Home")" ">
-                        Home
-                        <span class="visually-hidden">(current)</span>
-                    </a>
-                </li>              
-            </ul>
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" href="@Url.Action("Index", "User")">Account</a>
-                </li>
-            </ul>
+            
+            @if (username != null)
+            {
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="@Url.Action("Dashboard", "Home")">Home</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                    <li class="nav-item pe-3">
+                        <span class="navbar-text text-white">
+                            Welcome, <strong>@username</strong>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Index", "User")">Account</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Logout","Login")">Logout</a>
+                    </li>
+                </ul>
+            }
         </div>
     </div>
 </nav>

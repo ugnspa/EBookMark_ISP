@@ -1,56 +1,205 @@
-﻿<style>
-    .gradebook-table td, .gradebook-table th {
-        width: calc(100% / 12);
-        text-align: center;
-        border: 1px solid #ddd; 
+﻿@model EBookMark_ISP.ViewModels.GradeBookViewModel
+
+@{
+    var currentDate = DateTime.Now;
+    var currentSchedule = Model.schedules.Keys.FirstOrDefault(key => currentDate >= key.SemesterStart && currentDate <= key.SemesterEnd);
+    if (currentSchedule == null)
+    {
+        currentSchedule = Model.schedules.Keys.First();
     }
-
-</style>
-
-@model Dictionary<string, string[]>
-<div class="container text-center pb-5 mt-5">
-    <h2>Grade Book for @ViewBag.StudentName</h2>
-    <table class="table gradebook-table">
-        <thead class="thead-light">
-            <tr>
-                <th scope="col">
-                    <span>Subject</span> / <span>Day</span>
-                    </th>
-                @for (int i = 1; i <= Model.First().Value.Length; i++)
-                {
-                    <th scope="col">@i</th>
-                }
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var key in Model)
-            {
-                <tr>
-                    <th scope="row">@key.Key</th>
-                    @for (int i = 0; i < key.Value.Length; i++)
-                    {
-                        <td>
-                            @if (@key.Value[i] != null)
-                            {
-                                @if(ViewBag.Permissions == 5)
-                                {
-                                    <a class="btn btn-defaul" style="border:none;"asp-controller="Teacher" asp-action="EditMark" asp-route-name="@ViewBag.StudentName" asp-route-day="@(i+1)" asp-route-subject="@key.Key" asp-route-mark="@key.Value[i]">@key.Value[i]</a>
-                                }
-                                else{
-                                    <strong>@key.Value[i]</strong>
-                                }
-                            }
-                        </td>
-                    }
-                </tr>
-            }
-        </tbody>
-    </table>
+}
+<head>
+    <link rel="stylesheet" href="~/css/tiles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/nabButtons.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Gradebook.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/alert_style.css" asp-append-version="true" />
+</head>
+<h1>@Model.student.Name @Model.student.Surname GradeBook</h1>
+<div id="customAlert" class="custom-alert" style="display:none;">
+    <div class="custom-alert-content">
+        <p id="customAlertMessage"></p>
+    </div>
 </div>
-@if(ViewBag.Permissions == 5)
+
+<select id="semesterDropdown" class="custom-dropdown" onchange="showSchedules(this.value)">
+    @foreach (var key in Model.schedules.Keys)
+    {
+        if (key == currentSchedule)
+        {
+            <option value="@key.Id" selected>@key.SemesterStart.ToShortDateString() - @key.SemesterEnd.ToShortDateString()</option>
+        }
+        else
+        {
+            <option value="@key.Id">@key.SemesterStart.ToShortDateString() - @key.SemesterEnd.ToShortDateString()</option>
+        }
+    }
+</select>
+
+@foreach (var key in Model.schedules.Keys)
 {
-    <div class="col-md-4 mb-3">
-        <a class="btn btn-primary btn-lg" asp-controller="Teacher" asp-action="Student" asp-route-name="@ViewBag.StudentName">Back to Student window</a>
+
+    <div id="semester_@key.Id" style="display:none;">
+        <div class="month-buttons">
+            <button class="month-nav" onclick="changeMonth('@key.Id', -1)">&#8592; Prev</button>
+            <button class="month-nav" onclick="changeMonth('@key.Id', 1)">Next &#8594;</button>
+        </div>
+        @{
+            List<EBookMark_ISP.ViewModels.GradeBookViewModel.SubjectMarks> subjects = Model.schedules[@key];
+            var currentMonth = 0; 
+        }
+        @for (DateTime i = key.SemesterStart; i < key.SemesterEnd; i = i.AddMonths(1))
+        {
+            var monthId = "month_" + key.Id + "_" + currentMonth++;
+            <div id="@monthId" style="@(currentMonth == 1 ? "display:block;" : "display:none;")">
+                    <h2>@i.ToString("yyyy MMMM")</h2>
+                <table class="Gradebook">
+                    <thead>
+                        <tr>
+                            <th>Subject / Day</th>
+                            @{
+                                int daysInMonth = DateTime.DaysInMonth(i.Year, i.Month);
+                            }
+                            @for (int j = 1; j <= daysInMonth; j++)
+                            {
+                                <th>@j</th>
+                            }
+                            <th>Avg</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var subject in subjects)
+                        {
+                            <tr>
+                                <td>@subject.subject</td>
+                                @for (int day = 1; day <= daysInMonth; day++)
+                                {
+                                    var marksForDay = subject.marksTimes.Where(mt => mt.time.Day == day && mt.time.Month == i.Month).ToList();
+
+                                    <td @if(ViewBag.Permissions == 5 && Model.teachers_subject.Contains(subject.subject) && marksForDay != null && marksForDay.Count==1 ) {
+                                            @:onclick="location.href='@Url.Action("EditMark", "Teacher", new { mark_id = marksForDay.First().mark.Id, schedule_id =key.Id, subject_code =subject.subject })'"
+                                            @:style="cursor:pointer; font-weight: bold;"
+                                            }>
+                                        @if (marksForDay != null && marksForDay.Count == 1)
+                                        {
+                                            <div>
+                                                @marksForDay.First().mark.Mark1
+                                                <div class="mark-popup">
+                                                    Comment: @marksForDay.First().mark.Comment <br>
+                                                    Date: @marksForDay.First().mark.RegistrationDate.ToString("yyyy-MM-dd")
+                                                </div>
+                                            </div>
+                                        }
+                                        @if(marksForDay.Count==0)
+                                        {
+                                            
+                                        }
+                                        @if (marksForDay.Count > 1 && ViewBag.Permissions == 5 && Model.teachers_subject.Contains(subject.subject))
+                                        {
+                                            foreach(var mark in marksForDay)
+                                            {
+                                                <a class="double-mark" href="@Url.Action("EditMark", "Teacher", new { mark_id = mark.mark.Id, schedule_id = key.Id, subject_code = subject.subject })" style="display: block;">
+                                                    @mark.mark.Mark1
+                                                    <div class="mark-popup2">
+                                                        Comment: @mark.mark.Comment <br>
+                                                        Date: @mark.mark.RegistrationDate.ToString("yyyy-MM-dd")
+                                                    </div>
+                                                </a>
+                                            }
+                                        }
+                                        else if (marksForDay.Count > 1)
+                                        {
+                                            foreach(var mark in marksForDay)
+                                            {
+                                                <div class="double-mark2">
+                                                    @mark.mark.Mark1
+                                                    <div class="mark-popup2">
+                                                    Comment: @mark.mark.Comment <br>
+                                                    Date: @mark.mark.RegistrationDate.ToString("yyyy-MM-dd")
+                                                </div>
+                                                </div>
+                                            }
+                                        }
+                                    </td>
+
+                                }
+                                <td>@Math.Round(subject.average(),2)</td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+            </div>
+            
+        }
     </div>
 }
+@if (ViewBag.Permissions == 5)
+{
+    <div class="back-button">
+    <a class="btn btn-primary" asp-controller="Teacher" asp-action="Student" asp-route-student_id="@Model.student.FkUser">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5" />
+        </svg>
+        Student Page
+    </a>
+</div>
 
+}
+
+
+
+<script>
+    function showCustomAlert(message) {
+    document.getElementById('customAlertMessage').innerText = message;
+    document.getElementById('customAlert').style.display = 'block';
+
+    setTimeout(function() {
+        document.getElementById('customAlert').style.display = 'none';
+    }, 2500);
+}
+    function closeCustomAlert() {
+        document.getElementById('customAlert').style.display = 'none';
+    }
+    function showSchedules(semester_id) {
+    var semesters = document.querySelectorAll("div[id^='semester_']");
+    semesters.forEach(function(div) {
+        div.style.display = 'none';
+    });
+
+    var selectedSubjectsDiv = document.getElementById('semester_' + semester_id);
+    if (selectedSubjectsDiv) {
+        selectedSubjectsDiv.style.display = 'block';
+    }
+}
+
+    function changeMonth(semesterId, direction) {
+        var semesterDiv = document.getElementById('semester_' + semesterId);
+        var monthDivs = semesterDiv.querySelectorAll("div[id^='month_" + semesterId + "_']");
+        var currentMonthIndex = Array.from(monthDivs).findIndex(div => div.style.display !== 'none');
+
+        if (currentMonthIndex !== -1) {
+            monthDivs[currentMonthIndex].style.display = 'none';
+
+            var newMonthIndex = currentMonthIndex + direction;
+            if (newMonthIndex >= 0 && newMonthIndex < monthDivs.length) {
+                monthDivs[newMonthIndex].style.display = 'block';
+            } else {
+                monthDivs[currentMonthIndex].style.display = 'block';
+            }
+        }
+    }
+
+window.onload = function() {
+    @if (ViewBag.Message != null)
+    {
+        @:showCustomAlert('@Html.Raw(ViewBag.Message)');
+    }
+    var currentSemesterId = '@(currentSchedule?.Id)';
+    if (currentSemesterId) {
+        showSchedules(currentSemesterId);
+    }
+};
+
+
+
+</script>

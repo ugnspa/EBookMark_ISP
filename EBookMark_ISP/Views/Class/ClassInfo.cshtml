@@ -28,16 +28,19 @@
             }
     </style>
 
+    
+
 </head>
 <body>
     <div>
         <h1>Class information</h1>
-@*        @if (ViewBag.Permissions >= 9)
+        @if (ViewBag.Permissions >= 5)
         {
             <div style="text-align: right;">
-                <a href="@Url.Action("Create", "Class")" class="btn btn-success">Create Class</a>
+                <a href="@Url.Action("Index", "Class")" class="btn btn-primary">Back to class list</a>
             </div>
-        }*@
+            <br><br>
+        }
 
     </div>
 
@@ -45,38 +48,48 @@
         <tbody>
             <tr>
                 <th>Name</th>
-                <td>1A</td>
+                <td>@ViewBag.Class.Name</td>
             </tr>
             <tr>
                 <th>Student Count</th>
-                <td>24</td>
+                <td>@ViewBag.Class.StudentsCount</td>
             </tr>
             <tr>
                 <th>Year</th>
-                <td>1</td>
+                <td>@ViewBag.Class.Year</td>
             </tr>
             <tr>
                 <th>Code</th>
-                <td>1A2023</td>
+                <td>@ViewBag.Class.Code</td>
+            </tr>
+            <tr>
+                <th>School</th>
+                <td>@ViewBag.Class.FkSchoolNavigation.Name</td>
             </tr>
         </tbody>
     </table>
-    <br><br><br>
-    <h3>Students</h3>
-
+    @if(ViewBag.Students.Count > 0)
+    {
+        <br><br><br>
+        <h3>Students</h3>
     <table id="classes">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Surname</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Student</td>
-                <td>Student</td>
-            </tr>
-        </tbody>
-    </table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Surname</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var student in ViewBag.Students)
+                {
+                        <tr>
+                            <td>@student.Name</td>
+                            <td>@student.Surname</td>
+                        </tr>
+                }
+            </tbody>
+        </table>
+    }
+    
 </body>
 </html>

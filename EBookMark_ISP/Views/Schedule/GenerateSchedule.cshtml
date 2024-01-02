@@ -1,15 +1,21 @@
 ﻿@model List<Subject> // Your model is a list of Subject objects
 <h2>Generate Schedule</h2>
 
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 <form asp-controller="Schedule" asp-action="GenerateAndAddSchedule" method="post">
     <label for="semesterStart">Semester Start:</label>
-    <input type="date" id="semesterStart" name="SemesterStart" required />
+    <input type="date" id="semesterStart" name="SemesterStart" required onchange="updateMinimumSemesterEndDate()" />
 
     <label for="semesterEnd">Semester End:</label>
     <input type="date" id="semesterEnd" name="SemesterEnd" required />
 
     <label for="className">Class Name:</label>
-    <input type="text" id="className" name="ClassName" required />
+    <select id="className" name="ClassName" class="form-control" required>
+        @foreach (Class classItem in ViewBag.classes)
+        {
+            <option value="@classItem.Code">@classItem.Name</option>
+        }
+    </select>
 
     <h3>Lessons</h3>
     <div id="lessonsContainer">
@@ -29,20 +35,36 @@
             lessonDiv.classList.add('lesson');
 
             // Subject Dropdown
-            var select = document.createElement('select');
-            select.name = 'Subjects[]'; // Use array notation for the name to handle multiple values;
+            var subjectSelect = document.createElement('select');
+            subjectSelect.name = 'Subjects[]'; // Use array notation for the name to handle multiple values;
 
         @foreach (var subject in Model)
         {
             <text>
-                            var option = document.createElement('option');
-                option.value = "@subject.Code";
-                option.textContent = "@subject.Name";
-                select.appendChild(option);
+                                var subjectOption = document.createElement('option');
+                subjectOption.value = "@subject.Code";
+                subjectOption.textContent = "@subject.Name";
+                subjectSelect.appendChild(subjectOption);
             </text>
         }
 
-                lessonDiv.appendChild(select);
+                lessonDiv.appendChild(subjectSelect);
+
+            // Classroom Type Dropdown
+            var classroomSelect = document.createElement('select');
+            classroomSelect.name = 'ClassroomTypes[]';
+
+        @foreach (Classroom classroom in ViewBag.classrooms)
+        {
+            <text>
+                                var classroomOption = document.createElement('option');
+                classroomOption.value = "@classroom.UseCase"; // Assuming 'Usecase' is the value property
+                classroomOption.textContent = "@classroom.UseCase"; // Assuming 'Name' is the display property
+                classroomSelect.appendChild(classroomOption);
+            </text>
+        }
+
+                lessonDiv.appendChild(classroomSelect);
 
             // Amount Input
             var input = document.createElement('input');
@@ -55,5 +77,10 @@
             // Append the lessonDiv to the container
             lessonsContainer.appendChild(lessonDiv);
         });
+
+        function updateMinimumSemesterEndDate() {
+            var semesterStartDate = document.getElementById('semesterStart').value;
+            document.getElementById('semesterEnd').setAttribute('min', semesterStartDate);
+        }
     </script>
 }

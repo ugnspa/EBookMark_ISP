@@ -24,7 +24,7 @@
             white-space: pre-line; /* To retain newline characters in the tooltip. */
         }
 </style>
-@model List<LessonTime> // Assuming that the model passed to the view is of type Schedule
+@model List<SubjectTime> // Assuming that the model passed to the view is of type Schedule
 
 @{
     ViewData["Title"] = "Weekly Schedule";
@@ -32,12 +32,12 @@
     // Define the time slots
     var timeSlots = new TimeSpan[]
     {
-        new TimeSpan(9, 0, 0),
-        new TimeSpan(9, 55, 0),
-        new TimeSpan(10, 50, 0),
-        new TimeSpan(12, 0, 0),
-        new TimeSpan(12, 55, 0),
-        new TimeSpan(13, 40, 0)
+        new TimeSpan(8, 0, 0),
+        new TimeSpan(8, 55, 0),
+        new TimeSpan(9, 50, 0),
+        new TimeSpan(10, 35, 0),
+        new TimeSpan(12, 00, 0),
+        new TimeSpan(12, 45, 0)
     };
 
     // Define the days of the week
@@ -45,11 +45,14 @@
                          .Where(d => d >= DayOfWeek.Monday && d <= DayOfWeek.Friday).ToList();
 }
 
+@if (ViewBag.Access >= 5){
+    <a href="@Url.Action("Index", "Schedule")" class="btn btn-default">Return to Schedule List</a>
+}
 <h1>Weekly Schedule (@ViewBag.WeekStartDate.ToString("MM/dd/yyyy") to @ViewBag.WeekEndDate.ToString("MM/dd/yyyy"))</h1>
 
-@* Week selection dropdown list *@
 <form asp-controller="Schedule" asp-action="WeeklySchedule" method="get">
     <label for="weekDropdown">Select Week:</label>
+    <input type="hidden" name="scheduleId" value="@ViewBag.ScheduleId" />
     <select id="weekDropdown" name="selectedWeek" onchange="this.form.submit()">
         @Html.Raw(ViewBag.WeekDropdown)
     </select>
@@ -82,25 +85,25 @@
 </table>
 
 @functions {
-    public HtmlString RenderLesson(IEnumerable<LessonTime> lessons, DayOfWeek day, TimeSpan time)
+    public HtmlString RenderLesson(IEnumerable<SubjectTime> lessons, DayOfWeek day, TimeSpan time)
     {
-        var lesson = lessons.FirstOrDefault(l => l.Start.DayOfWeek == day &&
-                                                 l.Start.TimeOfDay <= time &&
-                                                 l.End.TimeOfDay > time);
+        var lesson = lessons.FirstOrDefault(l => l.StartDate.DayOfWeek == day &&
+                                                 l.StartDate.TimeOfDay <= time &&
+                                                 l.EndDate.TimeOfDay > time);
         if (lesson != null)
         {
             // Convert all the necessary information into a string.
-            var tooltipInfo = $"Subject: {lesson.Subject}\n" +
-                              $"Start: {lesson.Start.ToString("g")}\n" +
-                              $"End: {lesson.End.ToString("g")}\n" +
-                              $"Description: {lesson.Description}\n" +
-                              $"Type: {lesson.Type}\n" +
-                              $"Classroom: {(lesson.room != null ? lesson.room.number.ToString() : "-")}";
+            var tooltipInfo = $"Subject: {lesson.FkSubjectNavigation.Name}\n" +
+                              $"Start: {lesson.StartDate.ToString("g")}\n" +
+                              $"End: {lesson.EndDate.ToString("g")}\n" +
+                              $"Description: {lesson.Descrtiption}\n" +
+                              $"Type: {lesson.TypeNavigation.Name}\n" +
+                              $"Classroom: {(lesson.FkClassroomNavigation != null && lesson.FkClassroomNavigation.Code != null ? lesson.FkClassroomNavigation.Code.ToString() : "-")}";
             // Escape the string for use in an HTML attribute.
             var escapedTooltipInfo = HtmlEncoder.Default.Encode(tooltipInfo);
 
             // Return the cell content with a data attribute for the tooltip.
-            return new HtmlString($"<span class='lesson-info' data-tooltip='{escapedTooltipInfo}'>{lesson.Subject}</span>");
+            return new HtmlString($"<span class='lesson-info' data-tooltip='{escapedTooltipInfo}'>{lesson.FkSubjectNavigation.Name}</span>");
         }
 
         return new HtmlString("-");

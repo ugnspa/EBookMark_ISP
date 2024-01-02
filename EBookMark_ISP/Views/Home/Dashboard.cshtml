@@ -1,34 +1,17 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    var username = @ViewBag.Username;
+    var permissions = ViewBag.Permissions;
 }
-
-<div class="container">
-    <div class="row">
-        <div class="col-md-6 offset-md-3">
-            <div class="text-center">
-                @{
-                    var username = @ViewBag.Username;
-                    var permissions = ViewBag.Permissions;                   
-                    <h1 class="display-4">Logged in as: @username</h1>
-                    <h3 class="display-10">Permission value: @permissions</h3>
-                }
-                
-                
-            </div>
-            <div class="text-center">
-                <form asp-controller="Login" asp-action="Logout" method="post">
-                    <button type="submit" class="btn btn-danger">Logout</button>
-                </form>
-            </div>
-        </div>
-
-        
-    </div>
-</div>
+<head>
+    <link rel="stylesheet" href="~/css/alert_style.css" asp-append-version="true" />
+</head>
+@Html.Partial("_Alert")
 @{  
     if (permissions == 1)
     {
-        @Html.Partial("_Student")
+        @model EBookMark_ISP.ViewModels.FilterViewModel
+        @Html.Partial("_Student",Model)
     }
     else if(permissions == 5)
     {
@@ -39,3 +22,4 @@
         @Html.Partial("_Admin")
     }
 }
+

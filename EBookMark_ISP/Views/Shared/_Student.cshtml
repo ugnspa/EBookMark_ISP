@@ -1,27 +1,186 @@
-﻿
+﻿@model EBookMark_ISP.ViewModels.FilterViewModel
+
 @{
-    ViewData["Title"] = "_Teacher";
+    ViewData["Title"] = "_Student";
 }
+<head>
+    <link rel="stylesheet" href="~/css/tiles.css" asp-append-version="true" />
+</head>
 
-<div class="container border text-center pb-5 mt-5">
-    <h1 class="my-4">Student</h1>
+<div class="container  text-center pb-5">
+    <h2 class="my-4 name">Student</h2>
+        <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card tiles">
+                <div class="card-body">
+                    <a href="@Url.Action("GradeBook", "User")" class="stretched-link">
+                        <h5 class="card-title">My GradeBook</h5>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card tiles">
+                <div class="card-body">
+                    <a href="@Url.Action("index", "Schedule")" class="stretched-link">
+                        <h5 class="card-title">Schedule</h5>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card tiles">
+                <div class="card-body">
+                    <a href="@Url.Action("ClassInfo", "User")" class="stretched-link">
+                        <h5 class="card-title">Class info</h5>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card tiles">
+                <div class="card-body">
+                    <a href="@Url.Action("HomeWorkList", "HomeWork")" class="stretched-link">
+                        <h5 class="card-title">Homework</h5>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>   
+</div>
+
+@{
+    var currentDate = DateTime.Now;
+    var currentSemesterKey = Model.schedule_subjects.Keys.FirstOrDefault(key => currentDate >= key.SemesterStart && currentDate <= key.SemesterEnd);
+    if (currentSemesterKey == null)
+    {
+        currentSemesterKey = Model.schedule_subjects.Keys.First();
+    }
+    EBookMark_ISP.ViewModels.RankingViewModel ranking = new EBookMark_ISP.ViewModels.RankingViewModel();
+}
+<div class="container">
+    <h2 class="name">Ranking</h2>
+    <form id="rankingForm"  asp-controller="Student" asp-action="UpdateRanking" method="post">
+    <div class="col-md-9">
+            <select name="schedule_id" id="semesterDropdown" class="custom-dropdown" onchange="showSubjects(this.value)">
+            @foreach (var key in Model.schedule_subjects.Keys)
+            {
+                if (key == currentSemesterKey)
+                {
+                    <option value="@key.Id" selected>@key.SemesterStart.ToShortDateString() - @key.SemesterEnd.ToShortDateString()</option>
+                }
+                else
+                {
+                    <option value="@key.Id">@key.SemesterStart.ToShortDateString() - @key.SemesterEnd.ToShortDateString()</option>
+                }
+            }
+    </select>
+    </div>
+
     <div class="row">
-        <div class="col-md-4 mb-3">
-            <a class="btn btn-primary btn-lg" href="@Url.Action("GradeBook", "User")">My GradeBook</a>
-        </div>
-        <div class="col-md-4 mb-3">
 
-            <a class="btn btn-primary btn-lg" href="@Url.Action("index", "Schedule")">Schedule</a>
-        </div>
-        <div class="col-md-4 mb-3">
-            <a class="btn btn-primary btn-lg" href="@Url.Action("ClassInfo", "User")">Class info</a>
-        </div>
-        <div class="col-md-4 mb-3">
-            <a class="btn btn-primary btn-lg" href="@Url.Action("Index", "Class")">Classes</a>
+        <div class="col-md-3">
+                <label>Subject</label>
+                <select id="subjectDropdown"  class="custom-dropdown" name="selected_subject">
+                <option value="All">All</option>
+                    @foreach(var key in Model.schedule_subjects.Keys)
+                    {
+                        <div id ="subjectsForSemester_@key.Id">
+                            @foreach(var subject in Model.schedule_subjects[key])
+                            {
+                                <option value="@subject">@subject</option>
+                            }
+                        </div>
+                    }
+                </select>
 
         </div>
-        <div class="col-md-4 mb-3">
-            <a class="btn btn-primary btn-lg" href="@Url.Action("HomeWorkList", "HomeWork")">Homework</a
+
+        <div class="col-md-3">
+            <label>Scale</label>
+            <select class="custom-dropdown" name="selected_scale">
+                    @foreach(var scale in Model.scales)
+                    {
+                        <option value="@scale">@scale</option>
+                    }
+                </select>
+        </div>
+
+        <div class="col-md-3">
+            <label>Gender</label>
+            <select class="custom-dropdown" name="selected_gender_id">
+                    <option value="-1">All</option>
+                    @foreach(var gender in Model.genders)
+                    {
+                        <option value="@gender.Id">@gender.Name</option>
+                    }
+                </select>
+
         </div>
     </div>
+
+    <div class="col-md-9 ranking">
+
+    </div>
+
+<div class="col-md-2">
+    <button type="button" onclick="updateRanking()" class="btn btn-primary">Update ranking</button>
 </div>
+
+     </form>
+</div>
+
+
+
+<script>
+
+    function updateRanking() {
+        $.ajax({
+            url: '@Url.Action("UpdateRanking", "Student")',
+            type: 'POST',
+            data: $('#rankingForm').serialize(),
+            success: function(data) {
+                $('.ranking').html(data);
+            },
+            error: function(xhr, status, error) {
+                console.error("Error: " + error);
+            }
+        });
+    }
+
+
+    function showSubjects(semesterId) {
+        var subjectDropdown = document.getElementById('subjectDropdown');
+        subjectDropdown.innerHTML = '<option value="All">All</option>';
+
+    @foreach (var key in Model.schedule_subjects.Keys)
+    {
+        <text>
+                if ('@key.Id' == semesterId) {
+            @foreach (var subject in Model.schedule_subjects[key])
+            {
+                <text>
+                            var opt = document.createElement('option');
+                    opt.value = '@subject';
+                    opt.innerHTML = '@subject';
+                    subjectDropdown.appendChild(opt);
+                </text>
+            }
+                }
+        </text>
+    }
+    }
+
+    window.onload = function () {
+        var currentSemesterId = '@(currentSemesterKey?.Id)';
+        if (currentSemesterId) {
+            showSubjects(currentSemesterId);
+        }
+        updateRanking()
+    };
+
+</script>
+
+
+
+

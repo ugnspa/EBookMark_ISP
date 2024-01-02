@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>Class List</title>
+    <title>User List</title>
 
     <style>
         #table {
@@ -28,10 +28,19 @@
             }
     </style>
 
+    <script>
+        function confirmRemove(id, username, type) {
+            if (confirm("Are you sure you want to remove the user " + username + "?")) {
+                // If the user confirms, redirect to the Remove action
+                window.location.href = "@Url.Action("Remove", "User")" + "?id=" + id +" &type=" + type;
+            }
+        }
+    </script>
+
 </head>
 <body>
     <div>
-        <h1>Class List</h1>
+        <h1>User List</h1>
         @if (ViewBag.Permissions >= 9)
         {
             <div style="text-align: right;">
@@ -42,22 +51,97 @@
     </div>
 
     <table id="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Surname</th>
-            </tr>
-        </thead>
+        <!-- Table headers -->
         <tbody>
             <tr>
-                <td>Student</td>
-                <td>Student</td>
+                <th colspan="3"><center><h2>Admins</h2></center></th>
             </tr>
             <tr>
-                <td>Student2</td>
-                <td>Student2</td>
+                <th>Username</th>
+                <th>Email</th>
             </tr>
+            @foreach (var admin in ViewBag.Admins)
+            {
+                <tr>
+                    <td>@admin.Username</td>
+                    <td>@admin.Email</td>
+                    @if (ViewBag.Permissions >= 9)
+                    {
+                        <td>
+                            <a href="javascript:void(0);" onclick="confirmRemove('@admin.Id', '@admin.Username', 'admin');" class="btn btn-danger">Remove</a>
+                        </td>
+                    }
+                </tr>
+            }
         </tbody>
     </table>
+    <br><br>
+    <table id="table">
+        <!-- Table headers -->
+
+
+
+        <tbody>
+            <tr>
+                <th colspan="5"><center><h2>Students</h2></center></th>
+            </tr>
+            <tr>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>Email</th>
+            </tr>
+            @foreach (var student in ViewBag.Students)
+            {
+                <tr>
+                    <td>@student.FkUserNavigation.Username</td>
+                    <td>@student.Name</td>
+                    <td>@student.Surname</td>
+                    <td>@student.FkUserNavigation.Email</td>
+                    @if (ViewBag.Permissions >= 9)
+                    {
+                        <td>
+                            <a href="javascript:void(0);" onclick="confirmRemove('@student.FkUser', '@student.FkUserNavigation.Username', 'student');" class="btn btn-danger">Remove</a>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+    <br>
+    <br>
+    <table id="table">
+        <!-- Table headers -->
+            <tr>
+                <th colspan="6"><center><h2>Teachers</h2></center></th>
+            </tr>
+            <tr>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>Phone number</th>
+                <th>Email</th>
+            </tr>
+        <tbody>
+            @foreach (var teacher in ViewBag.Teachers)
+            {
+                <tr>
+                    <td>@teacher.FkUserNavigation.Username</td>
+                    <td>@teacher.Name</td>
+                    <td>@teacher.Surname</td>
+                    <td>@teacher.PhoneNumber</td>
+                    <td>@teacher.FkUserNavigation.Email</td>
+
+                    @if (ViewBag.Permissions >= 9)
+                    {
+                        <td>
+                            <a href="javascript:void(0);" onclick="confirmRemove('@teacher.FkUser', '@teacher.FkUserNavigation.Username', 'teacher');" class="btn btn-danger">Remove</a>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+
 </body>
 </html>

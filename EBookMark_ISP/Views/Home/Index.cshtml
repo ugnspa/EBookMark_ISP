@@ -16,7 +16,7 @@
                         var errorMessage = ViewData["ErrorMessage"] as string;
                         if (!string.IsNullOrEmpty(errorMessage))
                         {
-                            <p>Login failed: @errorMessage</p>
+                            <p style="color: red">Login failed: @errorMessage</p>
                         }
                     }
                     <form asp-controller="Login" asp-action="Login" method="post">
@@ -28,6 +28,7 @@
                             <label for="password">Password</label>
                             <input type="password" id="password" name="password" class="form-control" required>
                         </div>
+                        <br>
                         <button type="submit" class="btn btn-primary">Login</button>
                     </form>
                 </div>

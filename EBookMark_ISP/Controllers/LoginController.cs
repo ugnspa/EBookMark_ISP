@@ -1,9 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using EBookMark_ISP.Models;
+using EBookMark_ISP.Services;
 
 namespace EBookMark_ISP.Controllers
+
 {
     public class LoginController : Controller
     {
+
+        private readonly EbookmarkContext _context;
+
+        public LoginController(EbookmarkContext context)
+        {
+            _context = context;
+        }
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -19,11 +31,14 @@ namespace EBookMark_ISP.Controllers
 
             // Perform authentication logic here.
 
-            if (IsValidUser(username, password))
+            string passwordHash = Hash.ComputeSha256Hash(password);
+            int permissions;
+            if ((permissions = IsValidUser(username, passwordHash)) != -1)
             {
                 // Authentication successful, redirect to another page.
                 HttpContext.Session.SetString("Username", username);
-                HttpContext.Session.SetInt32("Permissions", GetPermission(username));
+                HttpContext.Session.SetInt32("Permissions", permissions);
+                //HttpContext.Session.SetInt32("Permissions", GetPermission(username));
                 return RedirectToAction("Dashboard", "Home");
             }
             else
@@ -40,8 +55,22 @@ namespace EBookMark_ISP.Controllers
             HttpContext.Session.Clear();
             return RedirectToAction("Index", "Home");
         }
+
+        private int IsValidUser(string username, string passwordHash)
+        {
+            User userToCheck = _context.Users.FirstOrDefault(u => u.Username == username);
+
+            if (userToCheck == null)
+                return -1;
+
+            if (userToCheck.Password != passwordHash)
+                return -1;
+
+            return userToCheck.Role;
+        }
+
         // Add your authentication logic here.
-        private bool IsValidUser(string username, string password)
+        private bool IsValidUserOffline(string username, string password)
         {
             Dictionary<string, string> dict = new Dictionary<string, string>();
             dict["student"] = "student";

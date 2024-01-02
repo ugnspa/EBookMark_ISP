@@ -1,18 +1,94 @@
 ﻿<div class="container mt-5">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <style>
+        #school {
+            width: 250px; /* Adjust the width as needed */
+            max-height: 100px; /* Adjust the height as needed */
+            /*overflow-y: auto; /* Allows scrolling if there are many options */
+        }
+    </style>
+
+    <script>
+        function initializeSchoolFilter(schoolFilterInputId, schoolDropdownId) {
+            var schoolOptions = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.SchoolOptions));
+
+            // Function to update dropdown options
+            function updateDropdownOptions(inputText) {
+                var $schoolDropdown = $("#" + schoolDropdownId);
+                $schoolDropdown.empty(); // Clear the existing options
+
+                // Filter and add matching options
+                schoolOptions.forEach(function (school) {
+                    if (school.Text.toLowerCase().includes(inputText.toLowerCase())) {
+                        $schoolDropdown.append($("<option>", {
+                            value: school.Value,
+                            text: school.Text
+                        }));
+                    }
+                });
+
+                // Show only if there are matching options
+                if ($schoolDropdown.children().length > 0) {
+                    $schoolDropdown.show();
+                } else {
+                    $schoolDropdown.hide();
+                }
+            }
+
+            // Event handler for school filter input
+            $("#" + schoolFilterInputId).on("input", function () {
+                updateDropdownOptions($(this).val());
+            });
+
+            // Event handler for school dropdown selection
+            $("#" + schoolDropdownId).on("change", function () {
+                var selectedText = $("#" + schoolDropdownId + " option:selected").text();
+                $("#" + schoolFilterInputId).val(selectedText); // Set the filter input to the selected option's text
+                $(this).hide(); // Hide the dropdown
+            });
+
+            // Hide dropdown when clicking outside
+            $(document).on("click", function (e) {
+                if (!$(e.target).closest("#" + schoolFilterInputId + ", #" + schoolDropdownId).length) {
+                    $("#" + schoolDropdownId).hide();
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            initializeSchoolFilter('schoolFilter', 'school');
+        });
+    </script>
+
     <div class="row">
         <div class="col-md-6 offset-md-3">
             <h2>Create a new class</h2>
-            <br><br><br>
+            <br><br>
+
+            <div style="text-align: right;">
+                <a href="@Url.Action("Index", "Class")" class="btn btn-primary">Back to class list</a>
+            </div>
 
             <form action="Create" method="post">
                 <h3>Class information</h3>
                 <div class="mb-3">
-                    <label for="name">Pavadinimas</label>
+                    <label for="name">Name (Letter)</label>
                     <input type="text" id="name" name="name" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label for="year">Metai</label>
+                    <label for="year">Grade</label>
                     <input type="number" id="year" name="year" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="schoolFilter">School</label>
+                    <input type="text" id="schoolFilter" class="form-control" placeholder="Search for a school" autocomplete="off" required>
+                        <select id="school" name="school" class="form-control" size="5" style="position: absolute; display: none;" required>
+
+                        </select>
                 </div>
 
                 <button type="submit" class="btn btn-primary">Create class</button>

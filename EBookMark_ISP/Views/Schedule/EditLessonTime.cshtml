@@ -1,73 +1,145 @@
-﻿@model LessonTime
+﻿@model SubjectTime
 
 @{
     ViewData["Title"] = "Edit Lesson Time";
 }
 
 <h2>Edit Lesson Time</h2>
-
+@if (TempData["SuccessMessage"] != null)
+    {
+<div class="alert alert-success">
+    @TempData["SuccessMessage"]
+</div>
+    }
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 <form asp-controller="Schedule" asp-action="UpdateLessonTime" method="post">
     @Html.HiddenFor(m => m.Id) <!-- Preserve the ID -->
+    <input type="hidden" name="scheduleId" value="@ViewBag.Schdeule" />
 
     <div>
         <label for="start">Start Time:</label>
-        <input type="datetime-local" id="start" name="Start" value="@Model.Start.ToString("yyyy-MM-ddTHH:mm")" required />
+        <input type="datetime-local" id="start" name="Start" value="@Model.StartDate.ToString("yyyy-MM-ddTHH:mm")" required onchange="updateMinimumEndTime()" />
     </div>
 
     <div>
         <label for="end">End Time:</label>
-        <input type="datetime-local" id="end" name="End" value="@Model.End.ToString("yyyy-MM-ddTHH:mm")" required />
+        <input type="datetime-local" id="end" name="End" value="@Model.EndDate.ToString("yyyy-MM-ddTHH:mm")" required />
     </div>
 
     <div>
         <label for="description">Description:</label>
-        <input type="text" id="description" name="Description" value="@Model.Description" required />
+        <input type="text" id="description" name="Description" value="@Model.Descrtiption" required />
     </div>
 
-    <div>
-        <label for="type">Type:</label>
-        <input type="text" id="type" name="Type" value="@Model.Type" required />
+    <!-- Type -->
+    <div class="form-group">
+        <label for="Type">Type:</label>
+        <select id="TypeDropdown" name="SubjectTypeId" class="form-control" onchange="updateClassroomDropdown()" required>
+
+    @foreach (SubjectType s in ViewBag.Types)
+    {
+        var optionTag = Model.Type == s.Id ? 
+            $"<option value=\"{s.Id}\" selected>{s.Name}</option>" : 
+            $"<option value=\"{s.Id}\">{s.Name}</option>";
+        
+        @Html.Raw(optionTag)
+    }
+</select>
+
+
     </div>
 
-    <div>
-        <label for="subject">Subject:</label>
-        <input type="text" id="subject" name="Subject" value="@Model.Subject" required />
+    <!-- Subject -->
+    <div class="form-group">
+        <label for="Subject">Subject:</label>
+        <select id="SubjectName" name="SubjectId" class="form-control" required>
+    @foreach (Subject s in ViewBag.Subjects)
+    {
+        var optionTag = Model.FkSubject == s.Code ? 
+            $"<option value=\"{s.Code}\" selected>{s.Name}</option>" : 
+            $"<option value=\"{s.Code}\">{s.Name}</option>";
+        
+        @Html.Raw(optionTag)
+    }
+</select>
+
     </div>
 
-    <!-- Classroom Fields -->
-    <div>
-    <label for="classroomId">Classroom:</label>
-    @Html.DropDownListFor(
-        m => m.room.number, 
-        (SelectList)ViewBag.ClassroomSelectList, 
-        null, // No default option
-        new { @class = "form-control" }
-    )
-</div>
-    @*<div>
-        <label for="number">Classroom Number:</label>
-        <input type="number" id="number" name="room.number" value="@Model.room?.number" required />
+    <!-- Classroom Dropdown -->
+    <div class="form-group">
+        <label id="classroomLabel" for="ClassRoom">Classroom:</label>
+        <select id="ClassRoomDropdown" name="ClassroomId" class="form-control">
+            @foreach (Classroom c in ViewBag.Classrooms)
+            {
+                var optionTag = Model.FkClassroom == c.Id ?
+                $"<option value=\"{c.Id}\" selected>{c.Code}, Floor: {c.Floor}, Building: {c.Building}, UseCase: {c.UseCase}, Capacity: {c.Capacity}</option>" :
+                $"<option value=\"{c.Id}\">{c.Code}, Floor: {c.Floor}, Building: {c.Building}, UseCase: {c.UseCase}, Capacity: {c.Capacity}</option>";
+
+                @Html.Raw(optionTag)
+            }
+        </select>
+
     </div>
-
     <div>
-        <label for="usage">Classroom Usage:</label>
-        <input type="text" id="usage" name="room.usage" value="@Model.room?.usage" required />
+        <input type="hidden" name="AddWeekly" value="false" />
+        @*<input type="checkbox" id="AddWeekly" name="AddWeekly" value="true" />
+        <label for="AddWeekly">Update for all weeks of semester</label>*@
     </div>
-
-    <div>
-        <label for="height">Classroom Height:</label>
-        <input type="number" id="height" name="room.height" value="@Model.room?.height" required />
-    </div>
-
-    <div>
-        <label for="numberOfSeats">Number of Seats:</label>
-        <input type="number" id="numberOfSeats" name="room.numberOfSeats" value="@Model.room?.numberOfSeats" required />
-    </div>
-
-    <div>
-        <label for="building">Building:</label>
-        <input type="text" id="building" name="room.building" value="@Model.room?.building" required />
-    </div>*@
-
     <button type="submit">Update Lesson Time</button>
 </form>
+
+<script>
+    function updateClassroomDropdown() {
+        var selectedType = document.getElementById('TypeDropdown').value;
+        var classroomDropdown = document.getElementById('ClassRoomDropdown');
+
+        if (selectedType == '2') {
+            classroomLabel.style.display = 'none';
+            classroomDropdown.style.display = 'none';
+            classroomDropdown.value = '';
+        } else {
+            classroomDropdown.style.display = 'block';
+            classroomLabel.style.display = 'block';
+            classroomDropdown.value = initialClassroomId; // Reset to initial value
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        // Ensures the DOM is fully loaded before attaching event listeners
+
+        var startTimeInput = document.getElementById('start');
+        var endTimeInput = document.getElementById('end');
+
+        if (startTimeInput && endTimeInput) {
+            startTimeInput.addEventListener('change', function () {
+                var selectedTime = startTimeInput.value;
+                endTimeInput.setAttribute('min', selectedTime);
+            });
+        }
+    });
+</script>
+
+
+<script>
+    var initialClassroomId;
+
+    window.onload = function () {
+        var classroomDropdown = document.getElementById('ClassRoomDropdown');
+        initialClassroomId = classroomDropdown.value; // Store the initial value
+        updateClassroomDropdown(); // Set initial state of the dropdowns
+    };
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var checkbox = document.getElementById('AddWeekly');
+        var hiddenInput = document.getElementsByName('AddWeekly')[0];
+
+        checkbox.addEventListener('change', function () {
+            if (checkbox.checked) {
+                hiddenInput.disabled = true;
+            } else {
+                hiddenInput.disabled = false;
+            }
+        });
+    });
+</script>

@@ -1,29 +1,19 @@
-namespace EBookMark_ISP.Models
+﻿using System;
+using System.Collections.Generic;
+
+namespace EBookMark_ISP.Models;
+
+public partial class File
 {
-    public class File
-    {
-        public string FileType { get; set; }
-        public string Name { get; set; }
-        public double Size { get; set;}
+    public int Id { get; set; }
 
+    public string Type { get; set; } = null!;
 
+    public string Name { get; set; } = null!;
 
-        public File()
-        {
+    public decimal Size { get; set; }
 
-        }
+    public int FkHomework { get; set; }
 
-        public File(string filetype, string name, double size)
-        {
-            FileType = filetype;
-            Name = name;
-            Size = size;
-
-        }
-
-
-    }
-
-    
-
+    public virtual Homework FkHomeworkNavigation { get; set; } = null!;
 }
